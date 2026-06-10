@@ -3,6 +3,7 @@ import dbConnect, { isMockDb } from '@/lib/db';
 import { Attendance } from '@/lib/models/Attendance';
 import { Student } from '@/lib/models/Student';
 import { mockDbHelper } from '@/lib/mockDb';
+import { sendSMS } from '@/lib/twilio';
 
 export async function GET(request: Request) {
   try {
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
     const { qrCodeData, studentId, source, status } = body;
 
     let log: any;
+    let smsMessage = '';
     if (isMockDb()) {
       log = mockDbHelper.logAttendance(studentId || qrCodeData, source, status);
       if (!log) {
@@ -58,6 +60,7 @@ export async function POST(request: Request) {
       const mockStudentsWithBatch = mockDbHelper.getStudents();
       const studentObj = mockStudentsWithBatch.find(s => s._id === log.studentId);
       log = { ...log, studentId: studentObj };
+      smsMessage = `Dear Parent, ${log.studentId.name} attendance has been logged.`;
     } else {
       let student = null;
       if (qrCodeData) {
@@ -90,7 +93,12 @@ export async function POST(request: Request) {
         existingAttendance.status = 'PRESENT'; // Completed day
         existingAttendance.source = source || 'MANUAL';
         await existingAttendance.save();
-        log = existingAttendance;
+        log = await Attendance.findById(existingAttendance._id).populate({
+          path: 'studentId',
+          populate: { path: 'batchId' }
+        });
+        const outTimeStr = existingAttendance.outTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        smsMessage = `Dear Parent, ${log.studentId.name} has left the institute at ${outTimeStr}.`;
       } else {
         // First scan of the day -> IN scan
         const attendance = await Attendance.create({
@@ -105,13 +113,25 @@ export async function POST(request: Request) {
           path: 'studentId',
           populate: { path: 'batchId' }
         });
+        const inTimeStr = attendance.inTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        smsMessage = `Dear Parent, ${log.studentId.name} has arrived at the institute at ${inTimeStr}.`;
       }
+    }
+
+    // Dispatch Twilio SMS
+    const parentPhone = log?.studentId?.parentPhone;
+    let smsSent = false;
+    if (parentPhone && smsMessage) {
+      const twilioResult = await sendSMS(parentPhone, smsMessage);
+      smsSent = twilioResult.success || (twilioResult as any).mode === 'simulation';
     }
 
     return NextResponse.json({ 
       success: true, 
       message: 'Attendance logged successfully.', 
-      log 
+      log,
+      smsSent,
+      smsMessage
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

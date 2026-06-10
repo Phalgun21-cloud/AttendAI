@@ -14,7 +14,7 @@ export async function PUT(
     const body = await request.json();
     const { status, transcript, summary, outcome } = body;
 
-    let call;
+    let call: any;
     if (isMockDb()) {
       call = mockDbHelper.updateCallSimulation(id, status, transcript, summary, outcome);
       if (call) {

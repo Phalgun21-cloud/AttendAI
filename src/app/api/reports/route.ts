@@ -29,7 +29,7 @@ export async function GET(request: Request) {
       end.setHours(23, 59, 59, 999);
     }
 
-    let reportData;
+    let reportData: any;
     if (isMockDb()) {
       reportData = mockDbHelper.getReports(batchId, startDateStr, endDateStr);
     } else {
