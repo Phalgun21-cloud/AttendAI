@@ -143,23 +143,21 @@ export default function QrGeneratorPage() {
       });
 
       // A4 dimensions: 210 x 297 mm
-      // Let's draw standard cards of size 85mm x 55mm (landscape layout for student ID cards)
-      // We can fit 8 cards on a single A4 page (2 columns, 4 rows)
-      const cardWidth = 85;
-      const cardHeight = 55;
-      const startX = 15;
+      // Let's draw standard barcode labels of size 90mm x 25mm (2 columns, 10 rows = 20 per page)
+      const cardWidth = 90;
+      const cardHeight = 25;
+      const startX = 10;
       const startY = 15;
       const gapX = 10;
-      const gapY = 10;
+      const gapY = 5;
 
       let col = 0;
       let row = 0;
 
       for (let i = 0; i < selectedList.length; i++) {
         const student = selectedList[i];
-        const batchName = typeof student.batchId === 'object' ? student.batchId.name : 'Master Batch';
 
-        if (i > 0 && i % 8 === 0) {
+        if (i > 0 && i % 20 === 0) {
           doc.addPage();
           col = 0;
           row = 0;
@@ -168,58 +166,27 @@ export default function QrGeneratorPage() {
         const x = startX + col * (cardWidth + gapX);
         const y = startY + row * (cardHeight + gapY);
 
-        // Draw Card Outline Border
-        doc.setDrawColor(39, 39, 42); // zinc-800
-        doc.setFillColor(9, 9, 11); // zinc-950 background
+        // Draw Faint Border
+        doc.setDrawColor(220, 220, 220); // light gray
+        doc.setFillColor(255, 255, 255); // white background
         doc.rect(x, y, cardWidth, cardHeight, 'FD');
 
-        // Draw Top Header Banner
-        doc.setFillColor(16, 185, 129); // emerald-500
-        doc.rect(x, y, cardWidth, 4, 'F');
-
-        // Draw Logo Text
-        doc.setTextColor(250, 250, 250); // zinc-50
-        doc.setFont('Helvetica', 'bold');
-        doc.setFontSize(8);
-        doc.text('ATTENDEE', x + 5, y + 9);
-
-        doc.setFont('Helvetica', 'normal');
-        doc.setFontSize(5);
-        doc.setTextColor(160, 160, 160);
-        doc.text('COACHING ID CARD', x + 5, y + 12);
-
         // Draw Student Information
+        doc.setTextColor(0, 0, 0); // black text
         doc.setFont('Helvetica', 'bold');
-        doc.setFontSize(9);
-        doc.setTextColor(250, 250, 250);
-        doc.text(student.name, x + 5, y + 22);
+        doc.setFontSize(10);
+        doc.text(student.name.substring(0, 20), x + 5, y + 10);
 
         doc.setFont('Helvetica', 'normal');
-        doc.setFontSize(7);
-        doc.setTextColor(180, 180, 180);
-        doc.text(`ID: ${student.studentId}`, x + 5, y + 27);
-        doc.text(`Course: ${student.course}`, x + 5, y + 32);
-        
-        doc.setFontSize(6);
-        doc.setTextColor(140, 140, 140);
-        doc.text(`Batch: ${batchName.substring(0, 25)}`, x + 5, y + 38);
-        doc.text(`Parent: ${student.parentName}`, x + 5, y + 43);
-        doc.text(`Phone: ${student.parentPhone}`, x + 5, y + 48);
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`ID: ${student.studentId}`, x + 5, y + 16);
 
         // Draw Barcode image
         const barcodeBase64 = qrCodes[student._id];
         if (barcodeBase64) {
-          doc.addImage(barcodeBase64, 'PNG', x + cardWidth - 36, y + 12, 30, 11);
+          doc.addImage(barcodeBase64, 'PNG', x + 40, y + 4, 45, 17);
         }
-
-        // Barcode Border box
-        doc.setDrawColor(80, 80, 80);
-        doc.rect(x + cardWidth - 38, y + 10, 34, 15);
-
-        // Footer marker
-        doc.setFontSize(4);
-        doc.setTextColor(80, 80, 80);
-        doc.text('SECURE BARCODE IDENTIFICATION', x + cardWidth - 37, y + 28);
 
         col++;
         if (col >= 2) {
@@ -266,7 +233,7 @@ export default function QrGeneratorPage() {
           ) : (
             <>
               <FileText className="h-4 w-4 text-black" />
-              Download {selectedFilteredCount} ID Cards (PDF)
+              Download {selectedFilteredCount} Barcodes (PDF)
             </>
           )}
         </button>

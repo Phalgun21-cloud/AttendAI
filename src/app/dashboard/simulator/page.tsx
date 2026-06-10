@@ -36,6 +36,7 @@ interface Call {
   transcript: Array<{ speaker: 'AI' | 'Parent'; text: string }>;
   summary: string;
   outcome: string;
+  smsSent?: boolean;
 }
 
 interface ConsoleLog {
@@ -139,8 +140,8 @@ export default function SimulatorPage() {
 
       const data = await res.json();
       if (data.success) {
-        addLog(`[DATABASE] Logged attendance: ${targetStudent.name} is ${selectedStatus}. LogId: ${data.log._id}`, 'db');
-        addLog(`[MQTT/EVENT] Broadcast packet dispatched: student_scan_status_present`, 'success');
+        addLog(`[DATABASE] Logged scan for: ${targetStudent.name} (Status: ${data.log.status}). LogId: ${data.log._id}`, 'db');
+        addLog(`[MQTT/EVENT] Broadcast packet dispatched: student_scan_recorded`, 'success');
         
         // Confetti!
         confetti({
@@ -171,7 +172,7 @@ export default function SimulatorPage() {
       if (data.success) {
         addLog(`[ENGINE] Cross-referenced daily logs against registered rosters.`, 'info');
         addLog(`[DATABASE] Added ${data.absenteesCount} ABSENT logs in Attendance collection.`, 'db');
-        addLog(`[CALL_QUEUE] Enqueued ${data.callsCount} PENDING parent follow-up phone calls.`, 'call');
+        addLog(`[CALL_QUEUE] Enqueued ${data.callsCount} PENDING parent follow-up phone calls and dispatched SMS notifications.`, 'call');
         
         if (data.absenteesCount > 0) {
           addLog(`Absentees detected: ${data.absentees.map((s: any) => s.name).join(', ')}`, 'warning');
@@ -390,14 +391,13 @@ export default function SimulatorPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Attendance State</label>
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Scan Action</label>
                     <select
                       value={selectedStatus}
                       onChange={(e: any) => setSelectedStatus(e.target.value)}
                       className="w-full bg-zinc-950/70 border border-zinc-800 rounded-lg px-2 py-2 text-zinc-300 focus:outline-none focus:border-emerald-500 cursor-pointer"
                     >
-                      <option value="PRESENT">Mark Present</option>
-                      <option value="LATE">Mark Late</option>
+                      <option value="PRESENT">Trigger Terminal Scan (IN / OUT)</option>
                     </select>
                   </div>
                 </div>
@@ -623,7 +623,14 @@ export default function SimulatorPage() {
                 calls.map((call) => (
                   <div key={call._id} className="flex items-center justify-between p-3 rounded-lg border border-zinc-850 bg-zinc-950/20 text-xs">
                     <div className="space-y-0.5">
-                      <div className="font-semibold text-white">{call.studentId?.name}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-white">{call.studentId?.name}</span>
+                        {call.smsSent && (
+                          <span className="px-1.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded text-[8px] font-bold tracking-widest uppercase">
+                            SMS SENT
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[9px] text-zinc-500 font-mono">
                         PARENT: {call.parentPhone} • STATUS: {call.status}
                       </div>

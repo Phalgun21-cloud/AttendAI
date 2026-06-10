@@ -99,8 +99,13 @@ export async function GET() {
         const scanTime = new Date(logDate);
         scanTime.setHours(8 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 60), 0);
 
+        const logDateMidnight = new Date(logDate);
+        logDateMidnight.setHours(0, 0, 0, 0);
+
         attendanceLogs.push({
           studentId: student._id,
+          date: logDateMidnight,
+          inTime: scanTime,
           timestamp: scanTime,
           status,
           source
@@ -122,17 +127,23 @@ export async function GET() {
               { speaker: 'AI', text: `Understood, we hope they recover quickly. The class recordings and notes will be shared. Thank you.` }
             ],
             summary: `Automated call to verify absence. Parent confirmed student is unwell.`,
-            outcome: `Parent notified (Student unwell)`
+            outcome: `Parent notified (Student unwell)`,
+            smsSent: true
           });
         }
       }
     }
 
     // Seed some today's attendance logs
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     const todayDatePresent1 = new Date();
     todayDatePresent1.setHours(8, 15, 0);
     attendanceLogs.push({
       studentId: seededStudents[0]._id, // Aman
+      date: startOfToday,
+      inTime: todayDatePresent1,
       timestamp: todayDatePresent1,
       status: 'PRESENT',
       source: 'QR'
@@ -142,6 +153,8 @@ export async function GET() {
     todayDatePresent2.setHours(8, 30, 0);
     attendanceLogs.push({
       studentId: seededStudents[2]._id, // Rohit
+      date: startOfToday,
+      inTime: todayDatePresent2,
       timestamp: todayDatePresent2,
       status: 'PRESENT',
       source: 'RFID'
@@ -151,6 +164,8 @@ export async function GET() {
     todayDatePresent3.setHours(8, 45, 0);
     attendanceLogs.push({
       studentId: seededStudents[4]._id, // Aditya
+      date: startOfToday,
+      inTime: todayDatePresent3,
       timestamp: todayDatePresent3,
       status: 'PRESENT',
       source: 'MANUAL'

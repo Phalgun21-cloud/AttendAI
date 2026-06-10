@@ -217,22 +217,24 @@ export const mockDbHelper = {
 
     const existingIdx = mockAttendance.findIndex(a => 
       a.studentId === student._id && 
-      new Date(a.timestamp).getTime() >= startOfDay.getTime() &&
-      new Date(a.timestamp).getTime() <= endOfDay.getTime()
+      (a.date ? new Date(a.date).getTime() === startOfDay.getTime() : new Date(a.timestamp).getTime() >= startOfDay.getTime() && new Date(a.timestamp).getTime() <= endOfDay.getTime())
     );
 
     if (existingIdx !== -1) {
-      mockAttendance[existingIdx].status = status || 'PRESENT';
-      mockAttendance[existingIdx].source = source || 'MANUAL';
+      mockAttendance[existingIdx].outTime = new Date();
       mockAttendance[existingIdx].timestamp = new Date();
+      mockAttendance[existingIdx].status = 'PRESENT';
+      mockAttendance[existingIdx].source = source || 'MANUAL';
       return mockAttendance[existingIdx];
     }
 
     const log = {
       _id: `a_new_${mockAttendance.length + 1}`,
       studentId: student._id,
+      date: startOfDay,
+      inTime: new Date(),
       timestamp: new Date(),
-      status: status || 'PRESENT',
+      status: 'PARTIAL',
       source: source || 'QR'
     };
     mockAttendance.push(log);
@@ -251,7 +253,7 @@ export const mockDbHelper = {
 
     const presentStudentIds = new Set(
       todaysScans
-        .filter(a => a.status === 'PRESENT' || a.status === 'LATE')
+        .filter(a => a.status === 'PRESENT' || a.status === 'LATE' || a.status === 'PARTIAL')
         .map(a => a.studentId)
     );
 
@@ -273,6 +275,7 @@ export const mockDbHelper = {
           mockAttendance.push({
             _id: `a_abs_${student._id}_today`,
             studentId: student._id,
+            date: startOfDay,
             timestamp: new Date(),
             status: 'ABSENT',
             source: 'MANUAL'
@@ -296,7 +299,8 @@ export const mockDbHelper = {
             transcript: [],
             summary: '',
             outcome: '',
-            createdAt: new Date()
+            createdAt: new Date(),
+            smsSent: true
           };
           mockCalls.push(call);
           callsQueued.push(call);

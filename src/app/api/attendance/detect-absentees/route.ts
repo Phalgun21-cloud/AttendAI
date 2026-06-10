@@ -34,12 +34,15 @@ export async function POST() {
     endOfDay.setHours(23, 59, 59, 999);
 
     const todaysAttendance = await Attendance.find({
-      timestamp: { $gte: startOfDay, $lte: endOfDay }
+      $or: [
+        { date: startOfDay },
+        { timestamp: { $gte: startOfDay, $lte: endOfDay } } // Fallback
+      ]
     });
 
     const presentStudentIds = new Set(
       todaysAttendance
-        .filter(log => log.status === 'PRESENT' || log.status === 'LATE')
+        .filter(log => log.status === 'PRESENT' || log.status === 'LATE' || log.status === 'PARTIAL')
         .map(log => log.studentId.toString())
     );
 
@@ -63,6 +66,7 @@ export async function POST() {
         if (!absentStudentIds.has(studentIdStr)) {
           await Attendance.create({
             studentId: student._id,
+            date: startOfDay,
             timestamp: new Date(),
             status: 'ABSENT',
             source: 'MANUAL'
@@ -82,7 +86,8 @@ export async function POST() {
             status: 'PENDING',
             transcript: [],
             summary: '',
-            outcome: ''
+            outcome: '',
+            smsSent: true // Simulating the SMS dispatch along with call queuing
           });
           callsQueued.push(call);
         }
