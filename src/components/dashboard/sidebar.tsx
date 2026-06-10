@@ -41,7 +41,7 @@ export default function Sidebar() {
             A
           </div>
           <div>
-            <span className="font-bold text-white tracking-wide text-base">AttendAI</span>
+            <span className="font-bold text-white tracking-wide text-base">Attendee</span>
             <span className="block text-[9px] font-mono text-emerald-400 uppercase tracking-widest leading-none mt-0.5">
               MVP V1.0
             </span>

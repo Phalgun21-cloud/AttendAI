@@ -114,7 +114,7 @@ export default function ReportsPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `AttendAI-Report-${startDate}-to-${endDate}.csv`);
+    link.setAttribute('download', `Attendee-Report-${startDate}-to-${endDate}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -142,7 +142,7 @@ export default function ReportsPage() {
       doc.setTextColor(250, 250, 250);
       doc.setFont('Helvetica', 'bold');
       doc.setFontSize(22);
-      doc.text('ATTENDAI ACADEMIC REPORT', 15, 20);
+      doc.text('ATTENDEE ACADEMIC REPORT', 15, 20);
 
       doc.setFont('Helvetica', 'normal');
       doc.setFontSize(9);
@@ -244,7 +244,7 @@ export default function ReportsPage() {
         currentY += 8;
       }
 
-      doc.save(`AttendAI-Roster-Report-${startDate}-to-${endDate}.pdf`);
+      doc.save(`Attendee-Roster-Report-${startDate}-to-${endDate}.pdf`);
     } catch (err) {
       console.error(err);
       alert('Could not export PDF.');

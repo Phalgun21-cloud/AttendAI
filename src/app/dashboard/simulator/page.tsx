@@ -111,7 +111,7 @@ export default function SimulatorPage() {
 
   useEffect(() => {
     loadInitialData();
-    addLog('AttendAI Simulation Node Initialized.', 'info');
+    addLog('Attendee Simulation Node Initialized.', 'info');
     addLog('Awaiting hardware inputs or engine events...', 'info');
   }, []);
 
@@ -199,7 +199,7 @@ export default function SimulatorPage() {
   const scenarios = {
     UNWELL: {
       dialogue: [
-        { speaker: 'AI', text: 'Hello, this is AttendAI calling from Coaching Institute. Am I speaking with the parent of student?' },
+        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. Am I speaking with the parent of student?' },
         { speaker: 'Parent', text: 'Yes, this is Ramesh Gupta. Is everything okay with Aman?' },
         { speaker: 'AI', text: 'Yes, everything is fine. We are just calling to verify Aman\'s absence. Aman was not in the morning batch class today.' },
         { speaker: 'Parent', text: 'Ah, yes. He caught a severe viral fever last night. He is resting now.' },
@@ -211,7 +211,7 @@ export default function SimulatorPage() {
     },
     VACATION: {
       dialogue: [
-        { speaker: 'AI', text: 'Hello, this is AttendAI calling from Coaching Institute. Am I speaking with the parent of student?' },
+        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. Am I speaking with the parent of student?' },
         { speaker: 'Parent', text: 'Yes, this is Sneha\'s mother. How can I help you?' },
         { speaker: 'AI', text: 'We noticed Sneha was absent from the IIT-JEE lecture batch today. Is everything fine?' },
         { speaker: 'Parent', text: 'Yes, we are out of town attending a family wedding. She will be absent for 2 more days.' },
@@ -223,7 +223,7 @@ export default function SimulatorPage() {
     },
     VOICEMAIL: {
       dialogue: [
-        { speaker: 'AI', text: 'Hello, this is AttendAI calling from Coaching Institute. We noticed that student was absent today...' },
+        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. We noticed that student was absent today...' },
         { speaker: 'Parent', text: '[BEEP: Voicemail system. Please leave a message after the tone.]' },
         { speaker: 'AI', text: 'This is a reminder from Coaching Institute regarding student\'s absence today. Please call back to confirm. Thank you.' }
       ],
@@ -337,7 +337,7 @@ export default function SimulatorPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-          AttendAI Simulators
+          Attendee Simulators
         </h1>
         <p className="text-zinc-400 mt-1 font-light text-sm">
           Simulate hardware events (QR/RFID card readers), trigger daily absentee check routines, and monitor AI-powered follow-up calls in real-time.
@@ -578,7 +578,7 @@ export default function SimulatorPage() {
                       }`}
                     >
                       <span className="block text-[8px] font-mono text-zinc-500 uppercase tracking-widest mb-0.5 leading-none">
-                        {t.speaker === 'AI' ? 'AttendAI Agent' : 'Parent'}
+                        {t.speaker === 'AI' ? 'Attendee Agent' : 'Parent'}
                       </span>
                       {t.text}
                     </div>

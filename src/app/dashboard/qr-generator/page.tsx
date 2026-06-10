@@ -181,7 +181,7 @@ export default function QrGeneratorPage() {
         doc.setTextColor(250, 250, 250); // zinc-50
         doc.setFont('Helvetica', 'bold');
         doc.setFontSize(8);
-        doc.text('ATTENDAI', x + 5, y + 9);
+        doc.text('ATTENDEE', x + 5, y + 9);
 
         doc.setFont('Helvetica', 'normal');
         doc.setFontSize(5);
@@ -228,7 +228,7 @@ export default function QrGeneratorPage() {
         }
       }
 
-      doc.save(`AttendAI-Cards-${selectedBatch ? 'Batch' : 'All'}.pdf`);
+      doc.save(`Attendee-Cards-${selectedBatch ? 'Batch' : 'All'}.pdf`);
     } catch (err) {
       console.error('PDF generation error:', err);
       alert('Failed to generate PDF. Make sure your browser supports download triggers.');
@@ -353,7 +353,7 @@ export default function QrGeneratorPage() {
                       <div className="w-5 h-5 rounded bg-emerald-500 flex items-center justify-center text-black font-extrabold text-[10px]">
                         A
                       </div>
-                      <span className="text-[10px] font-bold text-white tracking-widest uppercase">AttendAI</span>
+                      <span className="text-[10px] font-bold text-white tracking-widest uppercase">Attendee</span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
