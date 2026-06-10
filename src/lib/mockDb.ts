@@ -348,10 +348,24 @@ export const mockDbHelper = {
 
     const attendanceRate = totalStudents > 0 ? Math.round((presentToday / totalStudents) * 100) : 0;
 
-    const callsToday = mockCalls.filter(c => {
+    const attendanceBreakdown = [
+      { name: 'Present', value: todaysLogs.filter(a => a.status === 'PRESENT').length },
+      { name: 'Late', value: todaysLogs.filter(a => a.status === 'LATE').length },
+      { name: 'Absent', value: absentToday }
+    ];
+
+    const todaysCalls = mockCalls.filter(c => {
       const time = new Date(c.createdAt || c.timestamp).getTime();
       return time >= startOfToday.getTime() && time <= endOfToday.getTime();
-    }).length;
+    });
+    const callsToday = todaysCalls.length;
+
+    const callOutcomes = [
+      { name: 'Answered', value: todaysCalls.filter(c => c.status === 'COMPLETED' && c.outcome === 'Answered').length || Math.floor(callsToday * 0.4) },
+      { name: 'Voicemail', value: todaysCalls.filter(c => c.status === 'COMPLETED' && c.outcome === 'Voicemail').length || Math.floor(callsToday * 0.3) },
+      { name: 'Failed', value: todaysCalls.filter(c => c.status === 'FAILED').length || Math.floor(callsToday * 0.1) },
+      { name: 'Queued', value: todaysCalls.filter(c => c.status === 'QUEUED' || c.status === 'CALLING').length || (callsToday - Math.floor(callsToday * 0.8)) }
+    ];
 
     // Daily History
     const dailyHistory = [];
@@ -376,6 +390,26 @@ export const mockDbHelper = {
         date: weekdays[day.getDay()] + ' ' + (day.getMonth() + 1) + '/' + day.getDate(),
         present: dayPresent,
         rate
+      });
+    }
+
+    const monthlyHistory = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const baseRate = 80 + (i % 15);
+      monthlyHistory.push({
+        date: (d.getMonth() + 1) + '/' + d.getDate(),
+        rate: baseRate
+      });
+    }
+
+    const quarterlyHistory = [];
+    for (let i = 11; i >= 0; i--) {
+      const baseRate = 75 + (i % 20);
+      quarterlyHistory.push({
+        date: 'Week ' + (12 - i),
+        rate: baseRate
       });
     }
 
@@ -428,7 +462,11 @@ export const mockDbHelper = {
       absentToday,
       attendanceRate,
       aiCallsMade: callsToday,
+      attendanceBreakdown,
+      callOutcomes,
       dailyHistory,
+      monthlyHistory,
+      quarterlyHistory,
       batchStats,
       recentScans,
       recentCalls

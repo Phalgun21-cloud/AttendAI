@@ -35,12 +35,26 @@ export async function GET() {
       const unmarkedStudents = Math.max(0, totalStudents - todaysLogs.length);
       const absentToday = markedAbsentToday + unmarkedStudents;
 
+      const attendanceBreakdown = [
+        { name: 'Present', value: todaysLogs.filter(log => log.status === 'PRESENT').length },
+        { name: 'Late', value: todaysLogs.filter(log => log.status === 'LATE').length },
+        { name: 'Absent', value: absentToday }
+      ];
+
       const attendanceRate = totalStudents > 0 ? Math.round((presentToday / totalStudents) * 100) : 0;
 
       // 4. Calls today
-      const callsTodayCount = await Call.countDocuments({
+      const todaysCalls = await Call.find({
         createdAt: { $gte: startOfToday, $lte: endOfToday }
       });
+      const callsTodayCount = todaysCalls.length;
+
+      const callOutcomes = [
+        { name: 'Answered', value: todaysCalls.filter(c => c.status === 'COMPLETED' && c.outcome === 'Answered').length },
+        { name: 'Voicemail', value: todaysCalls.filter(c => c.status === 'COMPLETED' && c.outcome === 'Voicemail').length },
+        { name: 'Failed', value: todaysCalls.filter(c => c.status === 'FAILED').length },
+        { name: 'Queued', value: todaysCalls.filter(c => c.status === 'QUEUED' || c.status === 'CALLING').length }
+      ];
 
       // 5. Daily Attendance history (last 7 working days)
       const dailyHistory = [];
@@ -68,6 +82,45 @@ export async function GET() {
           date: weekdays[day.getDay()] + ' ' + (day.getMonth() + 1) + '/' + day.getDate(),
           present: dayPresent,
           rate: dayRate
+        });
+      }
+
+      // 5b. Monthly History (last 30 days)
+      const monthlyHistory = [];
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const startOfDay = new Date(d);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(d);
+        endOfDay.setHours(23, 59, 59, 999);
+        const logsOnDay = await Attendance.find({
+          timestamp: { $gte: startOfDay, $lte: endOfDay }
+        });
+        const dayPresent = logsOnDay.filter(log => log.status === 'PRESENT' || log.status === 'LATE').length;
+        const dayRate = totalStudents > 0 ? Math.round((dayPresent / totalStudents) * 100) : 0;
+        monthlyHistory.push({
+          date: (d.getMonth() + 1) + '/' + d.getDate(),
+          rate: dayRate
+        });
+      }
+
+      // 5c. Quarterly History (last 12 weeks)
+      const quarterlyHistory = [];
+      for (let i = 11; i >= 0; i--) {
+        const startOfWeek = new Date();
+        startOfWeek.setDate(startOfWeek.getDate() - (i * 7 + 7));
+        const endOfWeek = new Date();
+        endOfWeek.setDate(endOfWeek.getDate() - (i * 7));
+        const logsOnWeek = await Attendance.find({
+          timestamp: { $gte: startOfWeek, $lte: endOfWeek }
+        });
+        const expectedLogs = totalStudents * 7;
+        const weekPresent = logsOnWeek.filter(log => log.status === 'PRESENT' || log.status === 'LATE').length;
+        const weekRate = expectedLogs > 0 ? Math.round((weekPresent / expectedLogs) * 100) : 0;
+        quarterlyHistory.push({
+          date: 'Week ' + (12 - i),
+          rate: weekRate
         });
       }
 
@@ -115,7 +168,11 @@ export async function GET() {
         absentToday,
         attendanceRate,
         aiCallsMade: callsTodayCount,
+        attendanceBreakdown,
+        callOutcomes,
         dailyHistory,
+        monthlyHistory,
+        quarterlyHistory,
         batchStats,
         recentScans: recentScans.map((rs: any) => ({
           id: rs._id,

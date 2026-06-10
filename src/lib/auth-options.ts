@@ -18,6 +18,16 @@ export const authOptions: AuthOptions = {
           throw new Error('Please enter an email and password');
         }
 
+        // Hardcoded Super Admin Login
+        if (credentials.email === 'admin@attendai.com' && credentials.password === 'superadmin123') {
+          return {
+            id: 'super-admin-id',
+            name: 'Super Admin',
+            email: 'admin@attendai.com',
+            role: 'SUPER_ADMIN',
+          };
+        }
+
         await dbConnect();
 
         let user = null;
