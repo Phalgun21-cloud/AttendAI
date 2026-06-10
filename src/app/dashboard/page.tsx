@@ -21,6 +21,9 @@ const AreaChart = dynamic(() => import('recharts').then(mod => mod.AreaChart), {
 const Area = dynamic(() => import('recharts').then(mod => mod.Area), { ssr: false });
 const BarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false });
 const Bar = dynamic(() => import('recharts').then(mod => mod.Bar), { ssr: false });
+const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false });
+const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false });
+const Cell = dynamic(() => import('recharts').then(mod => mod.Cell), { ssr: false });
 const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false });
 const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false });
 const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
@@ -33,6 +36,10 @@ interface DashboardStats {
   attendanceRate: number;
   aiCallsMade: number;
   dailyHistory: Array<{ date: string; present: number; rate: number }>;
+  monthlyHistory: Array<{ date: string; rate: number }>;
+  quarterlyHistory: Array<{ date: string; rate: number }>;
+  attendanceBreakdown: Array<{ name: string; value: number }>;
+  callOutcomes: Array<{ name: string; value: number }>;
   batchStats: Array<{ name: string; present: number; total: number; rate: number }>;
   recentScans: Array<{ id: string; studentName: string; studentId: string; timestamp: string; status: string; source: string }>;
   recentCalls: Array<{ id: string; studentName: string; phone: string; status: string; outcome: string; timestamp: string }>;
@@ -43,6 +50,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [timeRange, setTimeRange] = useState<'daily' | 'monthly' | 'quarterly'>('daily');
 
   const fetchDashboardStats = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -145,20 +153,38 @@ export default function DashboardPage() {
 
       {/* Analytics Charts section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Daily Attendance Trend */}
+        {/* Attendance Trend */}
         <div className="lg:col-span-2 border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
-          <div>
-            <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
-              Daily Attendance Trend
-            </h3>
-            <p className="text-zinc-500 text-xs mt-0.5 font-light">
-              Class presentation rates tracked over the last 7 institute sessions.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+                Attendance Trend
+              </h3>
+              <p className="text-zinc-500 text-xs mt-0.5 font-light">
+                Class presentation rates tracked over different time periods.
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-800">
+              {(['daily', 'monthly', 'quarterly'] as const).map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={`px-3 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer ${
+                    timeRange === range
+                      ? 'bg-emerald-500/20 text-emerald-400 font-semibold'
+                      : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900'
+                  }`}
+                >
+                  {range}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="h-64 w-full">
-            {stats && stats.dailyHistory.length > 0 ? (
+            {stats && stats[`${timeRange}History`].length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={stats.dailyHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={stats[`${timeRange}History`]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
@@ -202,8 +228,44 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Batch Performance comparison */}
+        {/* Today's Attendance Breakdown */}
         <div className="border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
+          <div>
+            <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+              Today's Breakdown
+            </h3>
+            <p className="text-zinc-500 text-xs mt-0.5 font-light">
+              Precise daily presentation ratio.
+            </p>
+          </div>
+          <div className="h-64 w-full flex items-center justify-center">
+            {stats && stats.attendanceBreakdown ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                  <Pie
+                    data={stats.attendanceBreakdown}
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    <Cell key="cell-0" fill="#10b981" /> {/* Present - Emerald */}
+                    <Cell key="cell-1" fill="#f59e0b" /> {/* Late - Amber */}
+                    <Cell key="cell-2" fill="#ef4444" /> {/* Absent - Red */}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
+                    itemStyle={{ fontSize: '11px', fontFamily: 'monospace', color: '#fafafa' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Batch Performance comparison */}
+        <div className="lg:col-span-2 border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
           <div>
             <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
               Batch Performance
@@ -251,6 +313,43 @@ export default function DashboardPage() {
                     ))}
                   </Bar>
                 </BarChart>
+              </ResponsiveContainer>
+            ) : null}
+          </div>
+        </div>
+
+        {/* AI Call Outcomes Breakdown */}
+        <div className="border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
+          <div>
+            <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+              Call Outcomes
+            </h3>
+            <p className="text-zinc-500 text-xs mt-0.5 font-light">
+              Precise breakdown of today's follow-ups.
+            </p>
+          </div>
+          <div className="h-64 w-full flex items-center justify-center">
+            {stats && stats.callOutcomes ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                  <Pie
+                    data={stats.callOutcomes}
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    <Cell key="cell-0" fill="#10b981" /> {/* Answered - Emerald */}
+                    <Cell key="cell-1" fill="#f59e0b" /> {/* Voicemail - Amber */}
+                    <Cell key="cell-2" fill="#ef4444" /> {/* Failed - Red */}
+                    <Cell key="cell-3" fill="#52525b" /> {/* Queued - Zinc */}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
+                    itemStyle={{ fontSize: '11px', fontFamily: 'monospace', color: '#fafafa' }}
+                  />
+                </PieChart>
               </ResponsiveContainer>
             ) : null}
           </div>
