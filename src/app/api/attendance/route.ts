@@ -77,20 +77,28 @@ export async function POST(request: Request) {
 
       const existingAttendance = await Attendance.findOne({
         studentId: student._id,
-        timestamp: { $gte: startOfDay, $lte: endOfDay }
+        $or: [
+          { date: startOfDay },
+          { timestamp: { $gte: startOfDay, $lte: endOfDay } } // Fallback for older records
+        ]
       });
 
       if (existingAttendance) {
-        existingAttendance.status = status || 'PRESENT';
-        existingAttendance.source = source || 'MANUAL';
+        // Second scan of the day -> OUT scan
+        existingAttendance.outTime = new Date();
         existingAttendance.timestamp = new Date();
+        existingAttendance.status = 'PRESENT'; // Completed day
+        existingAttendance.source = source || 'MANUAL';
         await existingAttendance.save();
         log = existingAttendance;
       } else {
+        // First scan of the day -> IN scan
         const attendance = await Attendance.create({
           studentId: student._id,
+          date: startOfDay,
+          inTime: new Date(),
           timestamp: new Date(),
-          status: status || 'PRESENT',
+          status: 'PARTIAL', // Partial until they scan out
           source: source || 'QR',
         });
         log = await Attendance.findById(attendance._id).populate({
