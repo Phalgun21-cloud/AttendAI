@@ -10,7 +10,7 @@ export async function GET() {
   try {
     await dbConnect();
 
-    let stats;
+    let stats: any;
     if (isMockDb()) {
       stats = mockDbHelper.getDashboardStats();
     } else {

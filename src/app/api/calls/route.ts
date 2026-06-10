@@ -6,7 +6,7 @@ import { mockDbHelper } from '@/lib/mockDb';
 export async function GET() {
   try {
     await dbConnect();
-    let calls;
+    let calls: any;
     if (isMockDb()) {
       calls = mockDbHelper.getCalls();
     } else {

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
@@ -20,6 +20,69 @@ import {
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [scanToast, setScanToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+  // Global Physical Barcode Scanner Listener
+  useEffect(() => {
+    let buffer = '';
+    let lastKeyTime = Date.now();
+
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      // Ignore if typing in an input field
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+      const currentTime = Date.now();
+      
+      // Increase timeout to 1000ms so manual typing works for testing
+      if (currentTime - lastKeyTime > 1000) {
+        buffer = '';
+      }
+      lastKeyTime = currentTime;
+
+      // Ignore modifiers
+      if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return;
+
+      if (e.key === 'Enter') {
+        if (buffer.startsWith('QR-')) {
+          e.preventDefault();
+          const scannedCode = buffer;
+          buffer = '';
+          
+          try {
+            const res = await fetch('/api/attendance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                qrCodeData: scannedCode,
+                source: 'QR',
+                status: 'PRESENT'
+              })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+              setScanToast({ 
+                message: `Logged ${data.log.studentId?.name || scannedCode}. SMS Dispatched.`, 
+                type: 'success' 
+              });
+            } else {
+              setScanToast({ message: `Scan Failed: ${data.error}`, type: 'error' });
+            }
+          } catch (err) {
+            setScanToast({ message: 'Network error processing scan.', type: 'error' });
+          }
+          
+          setTimeout(() => setScanToast(null), 5000);
+        }
+      } else {
+        if (e.key.length === 1) buffer += e.key;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const menuItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -94,6 +157,16 @@ export default function Sidebar() {
           Sign Out
         </button>
       </div>
+
+      {/* Global Scan Toast Notification */}
+      {scanToast && (
+        <div className={`fixed bottom-6 left-64 ml-6 px-4 py-3 rounded-lg shadow-2xl border font-mono text-xs flex items-center gap-3 z-50 animate-in slide-in-from-bottom-5 ${
+          scanToast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'
+        }`}>
+          <Barcode className="h-4 w-4" />
+          {scanToast.message}
+        </div>
+      )}
     </aside>
   );
 }

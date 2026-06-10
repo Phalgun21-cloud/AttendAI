@@ -59,6 +59,9 @@ export default function SimulatorPage() {
   // Absentee trigger state
   const [detectLoading, setDetectLoading] = useState(false);
 
+  // Auto scanner state
+  const [isAutoScanning, setIsAutoScanning] = useState(false);
+
   // Call simulation states
   const [activeCall, setActiveCall] = useState<Call | null>(null);
   const [callProgressText, setCallProgressText] = useState('');
@@ -143,6 +146,10 @@ export default function SimulatorPage() {
         addLog(`[DATABASE] Logged scan for: ${targetStudent.name} (Status: ${data.log.status}). LogId: ${data.log._id}`, 'db');
         addLog(`[MQTT/EVENT] Broadcast packet dispatched: student_scan_recorded`, 'success');
         
+        if (data.smsSent) {
+          addLog(`[SMS_DISPATCH] Sent to Parent (${targetStudent.parentPhone}): "${data.smsMessage}"`, 'call');
+        }
+        
         // Confetti!
         confetti({
           particleCount: 50,
@@ -159,6 +166,52 @@ export default function SimulatorPage() {
       setScanLoading(false);
     }
   };
+
+  // Auto-Scanner Loop
+  useEffect(() => {
+    if (!isAutoScanning || students.length === 0) return;
+    
+    let timeout: NodeJS.Timeout;
+    
+    const doAutoScan = async () => {
+      // Pick a random student
+      const randomStudent = students[Math.floor(Math.random() * students.length)];
+      
+      try {
+        const res = await fetch('/api/attendance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            studentId: randomStudent.studentId,
+            source: 'QR',
+            status: 'PRESENT' // The backend handles IN/OUT logic automatically
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          addLog(`[AUTO-SCANNER] Simulated walk-in/out for: ${randomStudent.name}.`, 'info');
+          addLog(`[DATABASE] Logged scan for: ${randomStudent.name} (Status: ${data.log.status}). LogId: ${data.log._id}`, 'db');
+          if (data.smsSent) {
+            addLog(`[SMS_DISPATCH] Sent to Parent (${randomStudent.parentPhone}): "${data.smsMessage}"`, 'call');
+          }
+        }
+      } catch (e) {
+        addLog(`[ERROR] Auto-scanner failed to connect.`, 'error');
+      }
+
+      timeout = setTimeout(doAutoScan, Math.floor(Math.random() * 2000) + 3000); // 3-5 seconds interval
+    };
+
+    addLog(`[AUTO-SCANNER] Initializing automated scanning mode...`, 'warning');
+    timeout = setTimeout(doAutoScan, 2000);
+
+    return () => {
+      clearTimeout(timeout);
+      if (isAutoScanning) {
+        addLog(`[AUTO-SCANNER] Halted automated scanning mode.`, 'warning');
+      }
+    };
+  }, [isAutoScanning, students]);
 
   // Run absentee engine
   const handleTriggerAbsenteeCheck = async () => {
@@ -333,6 +386,17 @@ export default function SimulatorPage() {
     }, 2500);
   };
 
+  // Auto-dialer loop
+  useEffect(() => {
+    if (callStatus === 'IDLE') {
+      const pendingCall = calls.find(c => c.status === 'PENDING');
+      if (pendingCall) {
+        addLog(`[AUTO-DIALER] Automatically picking up next pending call for ${pendingCall.studentId.name}...`, 'info');
+        triggerCallSimulation(pendingCall);
+      }
+    }
+  }, [calls, callStatus]);
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -402,18 +466,27 @@ export default function SimulatorPage() {
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={scanLoading || !selectedStudentId}
-                  className="w-full bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wide py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  {scanLoading ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-black" />
-                  ) : (
-                    <Power className="h-3.5 w-3.5" />
-                  )}
-                  Simulate Reader Input
-                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="submit"
+                    disabled={scanLoading || !selectedStudentId || isAutoScanning}
+                    className="w-full bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wide py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {scanLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-black" />
+                    ) : (
+                      <Power className="h-3.5 w-3.5" />
+                    )}
+                    Manual Scan
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsAutoScanning(!isAutoScanning)}
+                    className={`w-full font-semibold text-xs font-mono uppercase tracking-wide py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${isAutoScanning ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30'}`}
+                  >
+                    {isAutoScanning ? 'Stop Auto-Scan' : 'Start Auto-Scan'}
+                  </button>
+                </div>
               </form>
             </div>
 
@@ -638,10 +711,10 @@ export default function SimulatorPage() {
                     {call.status === 'PENDING' ? (
                       <button
                         onClick={() => triggerCallSimulation(call)}
-                        disabled={callStatus !== 'IDLE'}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold font-mono uppercase tracking-wider bg-white hover:bg-zinc-200 text-black rounded transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                        disabled={true}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold font-mono uppercase tracking-wider bg-white/50 text-black rounded transition-all cursor-not-allowed opacity-50"
                       >
-                        Dial
+                        Auto-Dialing...
                       </button>
                     ) : (
                       <span className="text-[9px] font-mono text-zinc-500 uppercase">
