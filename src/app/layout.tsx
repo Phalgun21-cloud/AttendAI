@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AttendAI - Every Absence Triggers Action",
+  title: "Attendee - Every Absence Triggers Action",
   description: "Automated attendance tracking, absentee detection, and AI follow-up calling SaaS for coaching institutes.",
   keywords: ["attendance", "AI calling", "coaching institute", "SaaS", "absentee tracking"],
 };

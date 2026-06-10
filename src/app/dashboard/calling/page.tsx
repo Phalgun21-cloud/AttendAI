@@ -238,7 +238,7 @@ export default function CallingDashboardPage() {
                             }`}
                           >
                             <span className="block text-[8px] font-mono text-zinc-500 uppercase tracking-widest mb-1 font-bold">
-                              {t.speaker === 'AI' ? 'AttendAI Agent' : 'Parent'}
+                              {t.speaker === 'AI' ? 'Attendee Agent' : 'Parent'}
                             </span>
                             {t.text}
                           </div>

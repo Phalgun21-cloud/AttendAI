@@ -19,11 +19,11 @@ export const authOptions: AuthOptions = {
         }
 
         // Hardcoded Super Admin Login
-        if (credentials.email === 'admin@attendai.com' && credentials.password === 'superadmin123') {
+        if (credentials.email === 'admin@attendee.com' && credentials.password === 'superadmin123') {
           return {
             id: 'super-admin-id',
             name: 'Super Admin',
-            email: 'admin@attendai.com',
+            email: 'admin@attendee.com',
             role: 'SUPER_ADMIN',
           };
         }

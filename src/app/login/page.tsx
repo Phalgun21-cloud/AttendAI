@@ -10,7 +10,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   
-  const [email, setEmail] = useState('superadmin@attendai.com');
+  const [email, setEmail] = useState('superadmin@attendee.com');
   const [password, setPassword] = useState('password123');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -51,7 +51,7 @@ export default function LoginPage() {
       <div className="flex h-screen w-screen items-center justify-center bg-[#09090b]">
         <div className="flex flex-col items-center gap-2">
           <Activity className="h-8 w-8 animate-spin text-emerald-500" />
-          <p className="text-sm text-zinc-400 font-mono">Initializing AttendAI...</p>
+          <p className="text-sm text-zinc-400 font-mono">Initializing Attendee...</p>
         </div>
       </div>
     );
@@ -67,9 +67,9 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/15 bg-emerald-500/5 text-emerald-400 text-xs font-medium mb-3">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            ATTENDAI MVP V1.0
+            ATTENDEE MVP V1.0
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">AttendAI</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Attendee</h1>
           <p className="text-zinc-400 mt-2 text-sm font-light">
             Every Absence Triggers Action.
           </p>

@@ -12,7 +12,7 @@ export function seedMockDb() {
   const hashedPassword = bcrypt.hashSync('password123', 10);
 
   mockUsers = [
-    { _id: 'u1', name: 'Phalgun (Super Admin)', email: 'superadmin@attendai.com', password: hashedPassword, role: 'SUPER_ADMIN' }
+    { _id: 'u1', name: 'Phalgun (Super Admin)', email: 'superadmin@attendee.com', password: hashedPassword, role: 'SUPER_ADMIN' }
   ];
 
   mockBatches = [
@@ -74,7 +74,7 @@ export function seedMockDb() {
           timestamp: callTime,
           status: 'COMPLETED',
           transcript: [
-            { speaker: 'AI', text: `Hello, this is AttendAI calling from the Coaching Institute. We noticed that ${student.name} is absent from class today.` },
+            { speaker: 'AI', text: `Hello, this is Attendee calling from the Coaching Institute. We noticed that ${student.name} is absent from class today.` },
             { speaker: 'Parent', text: `Yes, thank you for letting me know. They are not feeling well today.` },
             { speaker: 'AI', text: `Understood, we hope they recover quickly. The class recordings and notes will be shared. Thank you.` }
           ],

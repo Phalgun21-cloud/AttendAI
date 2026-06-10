@@ -24,7 +24,7 @@ export default async function HomePage() {
             <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-extrabold text-lg tracking-tighter shadow-[0_0_15px_rgba(255,255,255,0.5)]">
               A
             </div>
-            <span className="font-bold tracking-wide text-lg">AttendAI</span>
+            <span className="font-bold tracking-wide text-lg">Attendee</span>
           </div>
           <div className="flex items-center gap-4">
             {session ? (
@@ -60,7 +60,7 @@ export default async function HomePage() {
           </h1>
           
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-zinc-400 font-light mb-12 leading-relaxed">
-            Automate tracking, manage batches, and deploy AI voice agents to notify parents instantly. AttendAI is the all-in-one operating system for modern educational institutes.
+            Automate tracking, manage batches, and deploy AI voice agents to notify parents instantly. Attendee is the all-in-one operating system for modern educational institutes.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -186,10 +186,10 @@ export default async function HomePage() {
             <div className="w-6 h-6 rounded bg-white flex items-center justify-center text-black font-extrabold text-xs tracking-tighter">
               A
             </div>
-            <span className="font-bold text-sm">AttendAI</span>
+            <span className="font-bold text-sm">Attendee</span>
           </div>
           <p className="text-zinc-500 text-sm font-light">
-            &copy; {new Date().getFullYear()} AttendAI MVP. Powered by advanced agentic AI.
+            &copy; {new Date().getFullYear()} Attendee MVP. Powered by advanced agentic AI.
           </p>
         </div>
       </footer>

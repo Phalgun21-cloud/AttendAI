@@ -18,7 +18,7 @@ export async function GET() {
         success: true,
         message: 'In-memory mock database re-seeded successfully!',
         users: {
-          superadmin: 'superadmin@attendai.com (pw: password123)'
+          superadmin: 'superadmin@attendee.com (pw: password123)'
         }
       });
     }
@@ -36,7 +36,7 @@ export async function GET() {
     // Create users
     const superAdmin = await User.create({
       name: 'Phalgun (Super Admin)',
-      email: 'superadmin@attendai.com',
+      email: 'superadmin@attendee.com',
       password: hashedPassword,
       role: 'SUPER_ADMIN',
     });
@@ -117,7 +117,7 @@ export async function GET() {
             timestamp: callTime,
             status: 'COMPLETED',
             transcript: [
-              { speaker: 'AI', text: `Hello, this is AttendAI calling from the Coaching Institute. We noticed that ${student.name} is absent from class today.` },
+              { speaker: 'AI', text: `Hello, this is Attendee calling from the Coaching Institute. We noticed that ${student.name} is absent from class today.` },
               { speaker: 'Parent', text: `Yes, thank you for letting me know. They are not feeling well today.` },
               { speaker: 'AI', text: `Understood, we hope they recover quickly. The class recordings and notes will be shared. Thank you.` }
             ],
@@ -163,7 +163,7 @@ export async function GET() {
       success: true,
       message: 'Database seeded successfully with Users, Batches, Students, Attendance, and Call records!',
       users: {
-        superadmin: 'superadmin@attendai.com (pw: password123)'
+        superadmin: 'superadmin@attendee.com (pw: password123)'
       },
       studentsCount: seededStudents.length,
       attendanceRecords: attendanceLogs.length,
