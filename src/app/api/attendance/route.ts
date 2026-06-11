@@ -47,12 +47,12 @@ export async function POST(request: Request) {
   try {
     await dbConnect();
     const body = await request.json();
-    const { qrCodeData, studentId, source, status } = body;
+    const { rfidCardId, studentId, source, status } = body;
 
     let log: any;
     let smsMessage = '';
     if (isMockDb()) {
-      log = mockDbHelper.logAttendance(studentId || qrCodeData, source, status);
+      log = mockDbHelper.logAttendance(studentId || rfidCardId, source, status);
       if (!log) {
         return NextResponse.json({ success: false, error: 'Student credentials invalid or unrecognised.' }, { status: 404 });
       }
@@ -60,13 +60,21 @@ export async function POST(request: Request) {
       const mockStudentsWithBatch = mockDbHelper.getStudents();
       const studentObj = mockStudentsWithBatch.find(s => s._id === log.studentId);
       log = { ...log, studentId: studentObj };
-      smsMessage = `Dear Parent, ${log.studentId.name} attendance has been logged.`;
+      
+      if (log.outTime) {
+        // Second scan of the day -> OUT scan (without time)
+        smsMessage = `Dear Parent, ${log.studentId.name} has left the institute.`;
+      } else {
+        // First scan of the day -> IN scan (with time)
+        const inTimeStr = new Date(log.inTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        smsMessage = `Dear Parent, ${log.studentId.name} has arrived at the institute at ${inTimeStr}.`;
+      }
     } else {
       let student = null;
-      if (qrCodeData) {
-        student = await Student.findOne({ qrCodeData });
-      } else if (studentId) {
+      if (studentId) {
         student = await Student.findOne({ studentId });
+      } else if (rfidCardId) {
+        student = await Student.findOne({ rfidCardId });
       }
 
       if (!student) {
@@ -97,8 +105,8 @@ export async function POST(request: Request) {
           path: 'studentId',
           populate: { path: 'batchId' }
         });
-        const outTimeStr = existingAttendance.outTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        smsMessage = `Dear Parent, ${log.studentId.name} has left the institute at ${outTimeStr}.`;
+        // Second scan SMS -> WITHOUT TIME
+        smsMessage = `Dear Parent, ${log.studentId.name} has left the institute.`;
       } else {
         // First scan of the day -> IN scan
         const attendance = await Attendance.create({
@@ -114,6 +122,7 @@ export async function POST(request: Request) {
           populate: { path: 'batchId' }
         });
         const inTimeStr = attendance.inTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        // First scan SMS -> WITH TIME
         smsMessage = `Dear Parent, ${log.studentId.name} has arrived at the institute at ${inTimeStr}.`;
       }
     }
@@ -133,6 +142,31 @@ export async function POST(request: Request) {
       smsSent,
       smsMessage
     });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    await dbConnect();
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    if (isMockDb()) {
+      mockDbHelper.clearTodaysAttendance();
+    } else {
+      await Attendance.deleteMany({
+        $or: [
+          { date: startOfDay },
+          { timestamp: { $gte: startOfDay, $lte: endOfDay } }
+        ]
+      });
+    }
+
+    return NextResponse.json({ success: true, message: "Today's attendance logs cleared." });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

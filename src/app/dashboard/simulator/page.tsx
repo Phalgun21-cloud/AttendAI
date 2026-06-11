@@ -24,7 +24,7 @@ interface Student {
   studentId: string;
   name: string;
   parentPhone: string;
-  qrCodeData: string;
+  rfidCardId: string;
   course: string;
 }
 
@@ -52,6 +52,8 @@ export default function SimulatorPage() {
 
   // Scan states
   const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [rfidInput, setRfidInput] = useState('');
+  const rfidInputRef = useRef<HTMLInputElement>(null);
   const [selectedSource, setSelectedSource] = useState<'QR' | 'RFID' | 'BIOMETRIC' | 'FACE' | 'MANUAL'>('QR');
   const [selectedStatus, setSelectedStatus] = useState<'PRESENT' | 'LATE'>('PRESENT');
   const [scanLoading, setScanLoading] = useState(false);
@@ -61,6 +63,7 @@ export default function SimulatorPage() {
 
   // Auto scanner state
   const [isAutoScanning, setIsAutoScanning] = useState(false);
+  const [clearLoading, setClearLoading] = useState(false);
 
   // Call simulation states
   const [activeCall, setActiveCall] = useState<Call | null>(null);
@@ -117,37 +120,49 @@ export default function SimulatorPage() {
     loadInitialData();
     addLog('Attendee Simulation Node Initialized.', 'info');
     addLog('Awaiting hardware inputs or engine events...', 'info');
+    if (rfidInputRef.current) {
+      rfidInputRef.current.focus();
+    }
   }, []);
 
   // Simulate hardware scan
   const handleSimulateScan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedStudentId) return;
+    
+    let targetStudent: Student | undefined;
+    let payload: any = {};
+
+    if (rfidInput) {
+      targetStudent = students.find(s => s.rfidCardId === rfidInput || s.studentId === rfidInput);
+      payload = { rfidCardId: rfidInput, source: selectedSource };
+      addLog(`Hardware Terminal trigger: RFID scan input received: "${rfidInput}"`, 'info');
+    } else {
+      if (!selectedStudentId) return;
+      targetStudent = students.find(s => s._id === selectedStudentId);
+      if (!targetStudent) return;
+      payload = { studentId: targetStudent.studentId, source: selectedSource };
+      addLog(`Hardware Terminal trigger: ${selectedSource} select scan for ${targetStudent.name} (${targetStudent.studentId})`, 'info');
+    }
 
     setScanLoading(true);
-    const targetStudent = students.find(s => s._id === selectedStudentId);
-    if (!targetStudent) return;
-
-    addLog(`Hardware Terminal trigger: ${selectedSource} sensor read for ${targetStudent.name} (${targetStudent.studentId})`, 'info');
 
     try {
       const res = await fetch('/api/attendance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentId: targetStudent.studentId,
-          source: selectedSource,
-          status: selectedStatus
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
       if (data.success) {
-        addLog(`[DATABASE] Logged scan for: ${targetStudent.name} (Status: ${data.log.status}). LogId: ${data.log._id}`, 'db');
+        const studentName = data.log.studentId?.name || targetStudent?.name || 'Unknown Student';
+        const parentPhone = data.log.studentId?.parentPhone || targetStudent?.parentPhone || 'Parent';
+
+        addLog(`[DATABASE] Logged scan for: ${studentName} (Status: ${data.log.status}). LogId: ${data.log._id}`, 'db');
         addLog(`[MQTT/EVENT] Broadcast packet dispatched: student_scan_recorded`, 'success');
         
         if (data.smsSent) {
-          addLog(`[SMS_DISPATCH] Sent to Parent (${targetStudent.parentPhone}): "${data.smsMessage}"`, 'call');
+          addLog(`[SMS_DISPATCH] Sent to Parent (${parentPhone}): "${data.smsMessage}"`, 'call');
         }
         
         // Confetti!
@@ -157,6 +172,12 @@ export default function SimulatorPage() {
           origin: { y: 0.8 },
           colors: ['#10b981', '#064e3b', '#ffffff']
         });
+
+        // Clear input and refocus
+        setRfidInput('');
+        if (rfidInputRef.current) {
+          rfidInputRef.current.focus();
+        }
       } else {
         addLog(`[ERROR] Database validation failed: ${data.error}`, 'error');
       }
@@ -212,6 +233,27 @@ export default function SimulatorPage() {
       }
     };
   }, [isAutoScanning, students]);
+
+  // Clear Today's Attendance Logs
+  const handleClearTodaysAttendance = async () => {
+    setClearLoading(true);
+    addLog("Initiating request: Clear today's attendance logs...", 'info');
+    try {
+      const res = await fetch('/api/attendance', { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        addLog("[DATABASE] Today's attendance logs successfully wiped.", 'success');
+        addLog("System ready for fresh check-in (1st scan) sequences.", 'info');
+        loadInitialData();
+      } else {
+        addLog(`[ERROR] Failed to clear attendance logs: ${data.error}`, 'error');
+      }
+    } catch (err) {
+      addLog("[FATAL] Handshake failed while clearing attendance logs.", 'error');
+    } finally {
+      setClearLoading(false);
+    }
+  };
 
   // Run absentee engine
   const handleTriggerAbsenteeCheck = async () => {
@@ -424,6 +466,23 @@ export default function SimulatorPage() {
               
               <form onSubmit={handleSimulateScan} className="space-y-4 text-xs font-light">
                 <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Hardware RFID Reader Input</label>
+                  <input
+                    ref={rfidInputRef}
+                    type="text"
+                    placeholder="Scan RFID tag or type here (e.g. RFID-STD001)..."
+                    value={rfidInput}
+                    onChange={(e) => setRfidInput(e.target.value)}
+                    className="w-full bg-zinc-950/70 border border-zinc-800 rounded-lg px-2.5 py-2 text-zinc-300 focus:outline-none focus:border-emerald-500 placeholder-zinc-650"
+                  />
+                  <p className="text-[9px] text-zinc-500 font-light">
+                    Keep this focused. Physical scanner hardware behaves like a keyboard and will automatically type and submit here.
+                  </p>
+                </div>
+
+                <div className="text-center font-mono text-[9px] text-zinc-700">— OR SELECT DIRECTLY —</div>
+
+                <div className="space-y-1">
                   <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Student Scan Target</label>
                   <select
                     value={selectedStudentId}
@@ -487,6 +546,19 @@ export default function SimulatorPage() {
                     {isAutoScanning ? 'Stop Auto-Scan' : 'Start Auto-Scan'}
                   </button>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={handleClearTodaysAttendance}
+                  disabled={clearLoading || isAutoScanning}
+                  className="w-full bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white font-semibold text-xs font-mono uppercase tracking-wide py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {clearLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-400" />
+                  ) : (
+                    <span className="text-red-500 font-bold font-mono">⚠️ Clear Today's Logs</span>
+                  )}
+                </button>
               </form>
             </div>
 

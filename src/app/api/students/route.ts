@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       if (existingStudent) {
         return NextResponse.json({ success: false, error: 'Student ID already exists' }, { status: 400 });
       }
-      const qrCodeData = `QR-${studentId}`;
+      const rfidCardId = `RFID-${studentId}`;
       student = await Student.create({
         studentId,
         name,
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
         parentPhone,
         batchId,
         course,
-        qrCodeData,
+        rfidCardId,
       });
     }
 
