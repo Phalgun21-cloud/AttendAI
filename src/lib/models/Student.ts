@@ -8,7 +8,7 @@ const StudentSchema = new Schema({
   parentPhone: { type: String, required: true },
   batchId: { type: Schema.Types.ObjectId, ref: 'Batch', required: true },
   course: { type: String, required: true },
-  qrCodeData: { type: String, required: true, unique: true }
+  rfidCardId: { type: String, required: true, unique: true }
 }, { timestamps: true });
 
 export const Student = mongoose.models.Student || mongoose.model('Student', StudentSchema);

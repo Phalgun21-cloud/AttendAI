@@ -62,12 +62,12 @@ export async function GET() {
 
     // Create Students
     const studentsData = [
-      { studentId: 'STD001', name: 'Aman Gupta', parentName: 'Ramesh Gupta', parentPhone: '+919876543210', batchId: batch1._id, course: 'IIT-JEE Prep', qrCodeData: 'QR-STD001' },
-      { studentId: 'STD002', name: 'Sneha Sharma', parentName: 'Sunita Sharma', parentPhone: '+919876543211', batchId: batch1._id, course: 'IIT-JEE Prep', qrCodeData: 'QR-STD002' },
-      { studentId: 'STD003', name: 'Rohit Kumar', parentName: 'Vijay Kumar', parentPhone: '+919876543212', batchId: batch2._id, course: 'NEET Prep', qrCodeData: 'QR-STD003' },
-      { studentId: 'STD004', name: 'Priya Patel', parentName: 'Dinesh Patel', parentPhone: '+919876543213', batchId: batch2._id, course: 'NEET Prep', qrCodeData: 'QR-STD004' },
-      { studentId: 'STD005', name: 'Aditya Singh', parentName: 'Karan Singh', parentPhone: '+919876543214', batchId: batch3._id, course: 'Class 10 Board', qrCodeData: 'QR-STD005' },
-      { studentId: 'STD006', name: 'Ishita Sen', parentName: 'Anil Sen', parentPhone: '+919876543215', batchId: batch3._id, course: 'Class 10 Board', qrCodeData: 'QR-STD006' },
+      { studentId: 'STD001', name: 'Aman Gupta', parentName: 'Ramesh Gupta', parentPhone: '+919876543210', batchId: batch1._id, course: 'IIT-JEE Prep', rfidCardId: 'RFID-STD001' },
+      { studentId: 'STD002', name: 'Sneha Sharma', parentName: 'Sunita Sharma', parentPhone: '+919876543211', batchId: batch1._id, course: 'IIT-JEE Prep', rfidCardId: 'RFID-STD002' },
+      { studentId: 'STD003', name: 'Rohit Kumar', parentName: 'Vijay Kumar', parentPhone: '+919876543212', batchId: batch2._id, course: 'NEET Prep', rfidCardId: 'RFID-STD003' },
+      { studentId: 'STD004', name: 'Priya Patel', parentName: 'Dinesh Patel', parentPhone: '+919876543213', batchId: batch2._id, course: 'NEET Prep', rfidCardId: 'RFID-STD004' },
+      { studentId: 'STD005', name: 'Aditya Singh', parentName: 'Karan Singh', parentPhone: '+919876543214', batchId: batch3._id, course: 'Class 10 Board', rfidCardId: 'RFID-STD005' },
+      { studentId: 'STD006', name: 'Ishita Sen', parentName: 'Anil Sen', parentPhone: '+919876543215', batchId: batch3._id, course: 'Class 10 Board', rfidCardId: 'RFID-STD006' },
     ];
 
     const seededStudents = await Student.insertMany(studentsData);
