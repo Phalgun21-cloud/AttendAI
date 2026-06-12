@@ -23,12 +23,27 @@ export async function GET() {
       });
     }
 
-    // Clean collection
-    await User.deleteMany({});
-    await Batch.deleteMany({});
-    await Student.deleteMany({});
-    await Attendance.deleteMany({});
-    await Call.deleteMany({});
+    // Clean collection and wipe old indexes
+    const dropCollection = async (model: any) => {
+      try {
+        await model.collection.drop();
+      } catch (e) {
+        // Ignore error if collection does not exist yet
+      }
+    };
+
+    await dropCollection(User);
+    await dropCollection(Batch);
+    await dropCollection(Student);
+    await dropCollection(Attendance);
+    await dropCollection(Call);
+
+    // Rebuild indexes
+    await User.createIndexes();
+    await Batch.createIndexes();
+    await Student.createIndexes();
+    await Attendance.createIndexes();
+    await Call.createIndexes();
 
     // Hash password
     const hashedPassword = bcrypt.hashSync('password123', 10);
@@ -41,23 +56,25 @@ export async function GET() {
       role: 'SUPER_ADMIN',
     });
 
-    // Create Batches
     const batch1 = await Batch.create({
       name: 'IIT-JEE Master Batch A',
       course: 'IIT-JEE Prep',
       timeSlot: '08:00 AM - 11:00 AM',
+      startTime: '08:00',
     });
 
     const batch2 = await Batch.create({
       name: 'NEET Achievers Batch B',
       course: 'NEET Prep',
       timeSlot: '11:30 AM - 02:30 PM',
+      startTime: '11:30',
     });
 
     const batch3 = await Batch.create({
       name: 'Foundation Tenth Grade C',
       course: 'Class 10 Board',
       timeSlot: '04:00 PM - 06:00 PM',
+      startTime: '16:00',
     });
 
     // Create Students
@@ -77,8 +94,8 @@ export async function GET() {
     const attendanceLogs = [];
     const callLogs = [];
 
-    // Seed past attendance logs
-    for (let i = 7; i > 0; i--) {
+    // Seed past attendance logs (last 90 days for quarterly views)
+    for (let i = 90; i > 0; i--) {
       const logDate = new Date();
       logDate.setDate(today.getDate() - i);
       // Skip weekends

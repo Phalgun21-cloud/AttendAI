@@ -14,7 +14,8 @@ import {
   User, 
   LogOut,
   Sparkles,
-  Layers
+  Layers,
+  Barcode
 } from 'lucide-react';
 
 export default function Sidebar() {

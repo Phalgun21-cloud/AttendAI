@@ -193,10 +193,23 @@ export default function SimulatorPage() {
     if (!isAutoScanning || students.length === 0) return;
     
     let timeout: NodeJS.Timeout;
+    let isActive = true; // prevent state updates if unmounted or stopped
+    const scannedThisSession = new Set<string>();
     
     const doAutoScan = async () => {
-      // Pick a random student
-      const randomStudent = students[Math.floor(Math.random() * students.length)];
+      if (!isActive) return;
+
+      const availableStudents = students.filter(s => !scannedThisSession.has(s._id));
+      
+      if (availableStudents.length === 0) {
+        addLog(`[AUTO-SCANNER] Morning rush complete. All ${students.length} students have been processed.`, 'success');
+        setIsAutoScanning(false);
+        return;
+      }
+
+      // Pick a random student from the remaining available ones
+      const randomStudent = availableStudents[Math.floor(Math.random() * availableStudents.length)];
+      scannedThisSession.add(randomStudent._id);
       
       try {
         const res = await fetch('/api/attendance', {
@@ -204,29 +217,32 @@ export default function SimulatorPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             studentId: randomStudent.studentId,
-            source: 'QR',
-            status: 'PRESENT' // The backend handles IN/OUT logic automatically
+            source: 'RFID', // More genuine hardware simulation
+            status: 'PRESENT'
           })
         });
         const data = await res.json();
-        if (data.success) {
-          addLog(`[AUTO-SCANNER] Simulated walk-in/out for: ${randomStudent.name}.`, 'info');
+        if (data.success && isActive) {
+          addLog(`[AUTO-SCANNER] Simulated walk-in for: ${randomStudent.name}.`, 'info');
           addLog(`[DATABASE] Logged scan for: ${randomStudent.name} (Status: ${data.log.status}). LogId: ${data.log._id}`, 'db');
           if (data.smsSent) {
             addLog(`[SMS_DISPATCH] Sent to Parent (${randomStudent.parentPhone}): "${data.smsMessage}"`, 'call');
           }
         }
       } catch (e) {
-        addLog(`[ERROR] Auto-scanner failed to connect.`, 'error');
+        if (isActive) addLog(`[ERROR] Auto-scanner failed to connect.`, 'error');
       }
 
-      timeout = setTimeout(doAutoScan, Math.floor(Math.random() * 2000) + 3000); // 3-5 seconds interval
+      if (isActive) {
+        timeout = setTimeout(doAutoScan, Math.floor(Math.random() * 2000) + 3000); // 3-5 seconds interval
+      }
     };
 
-    addLog(`[AUTO-SCANNER] Initializing automated scanning mode...`, 'warning');
+    addLog(`[AUTO-SCANNER] Initializing morning rush entry simulation...`, 'warning');
     timeout = setTimeout(doAutoScan, 2000);
 
     return () => {
+      isActive = false;
       clearTimeout(timeout);
       if (isAutoScanning) {
         addLog(`[AUTO-SCANNER] Halted automated scanning mode.`, 'warning');
@@ -295,33 +311,33 @@ export default function SimulatorPage() {
   const scenarios = {
     UNWELL: {
       dialogue: [
-        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. Am I speaking with the parent of student?' },
-        { speaker: 'Parent', text: 'Yes, this is Ramesh Gupta. Is everything okay with Aman?' },
-        { speaker: 'AI', text: 'Yes, everything is fine. We are just calling to verify Aman\'s absence. Aman was not in the morning batch class today.' },
-        { speaker: 'Parent', text: 'Ah, yes. He caught a severe viral fever last night. He is resting now.' },
-        { speaker: 'AI', text: 'Oh, we hope Aman gets well soon. We will share the class notes and lecture recordings so he does not miss out. Thank you.' },
+        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. Am I speaking with the parent of {studentName}?' },
+        { speaker: 'Parent', text: 'Yes, this is {parentName}. Is everything okay with {studentFirstName}?' },
+        { speaker: 'AI', text: 'Yes, everything is fine. We are just calling to verify {studentFirstName}\'s absence. {studentFirstName} was not in the morning batch class today.' },
+        { speaker: 'Parent', text: 'Ah, yes. They caught a severe viral fever last night. They are resting now.' },
+        { speaker: 'AI', text: 'Oh, we hope {studentFirstName} gets well soon. We will share the class notes and lecture recordings so they do not miss out. Thank you.' },
         { speaker: 'Parent', text: 'That would be helpful. Thank you so much.' }
       ],
       outcome: 'Parent notified (Student unwell)',
-      summary: 'Verified absence. Parent confirmed student is sick with fever. Shared online study support.'
+      summary: 'Verified absence. Parent confirmed {studentFirstName} is sick with fever. Shared online study support.'
     },
     VACATION: {
       dialogue: [
-        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. Am I speaking with the parent of student?' },
-        { speaker: 'Parent', text: 'Yes, this is Sneha\'s mother. How can I help you?' },
-        { speaker: 'AI', text: 'We noticed Sneha was absent from the IIT-JEE lecture batch today. Is everything fine?' },
-        { speaker: 'Parent', text: 'Yes, we are out of town attending a family wedding. She will be absent for 2 more days.' },
-        { speaker: 'AI', text: 'Understood. We will mark her leave in the roster. Have a safe trip, and we expect her back on Monday.' },
+        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. Am I speaking with the parent of {studentName}?' },
+        { speaker: 'Parent', text: 'Yes, this is {parentName}. How can I help you?' },
+        { speaker: 'AI', text: 'We noticed {studentFirstName} was absent from the lecture batch today. Is everything fine?' },
+        { speaker: 'Parent', text: 'Yes, we are out of town attending a family wedding. They will be absent for 2 more days.' },
+        { speaker: 'AI', text: 'Understood. We will mark their leave in the roster. Have a safe trip, and we expect them back soon.' },
         { speaker: 'Parent', text: 'Yes, thank you for checking.' }
       ],
       outcome: 'Parent notified (Family travel)',
-      summary: 'Verified absence. Parent confirmed out of town for wedding. Marked leave until Monday.'
+      summary: 'Verified absence. Parent confirmed out of town for wedding. Marked leave.'
     },
     VOICEMAIL: {
       dialogue: [
-        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. We noticed that student was absent today...' },
+        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. We noticed that {studentName} was absent today...' },
         { speaker: 'Parent', text: '[BEEP: Voicemail system. Please leave a message after the tone.]' },
-        { speaker: 'AI', text: 'This is a reminder from Coaching Institute regarding student\'s absence today. Please call back to confirm. Thank you.' }
+        { speaker: 'AI', text: 'This is a reminder from Coaching Institute regarding {studentFirstName}\'s absence today. Please call back to confirm. Thank you.' }
       ],
       outcome: 'No answer (Voicemail)',
       summary: 'Triggered automated dialer. Unreachable, left voicemail note.'
@@ -359,11 +375,20 @@ export default function SimulatorPage() {
         body: JSON.stringify({ status: 'ANSWERED' })
       });
 
+      // Replace placeholders with dynamic data
+      const studentFullName = call.studentId.name;
+      const studentFirstName = studentFullName.split(' ')[0];
+      // Note: we'll cast to any because parentName might be missing from the interface locally
+      const parentName = (call.studentId as any).parentName || 'the parent';
+
       // Render dialogue line-by-line
       let i = 0;
       const conversation = template.dialogue.map(item => ({
         speaker: item.speaker as 'AI' | 'Parent',
-        text: item.text.replace('student', call.studentId.name)
+        text: item.text
+          .replace(/{studentName}/g, studentFullName)
+          .replace(/{studentFirstName}/g, studentFirstName)
+          .replace(/{parentName}/g, parentName)
       }));
 
       const printLine = () => {
@@ -387,7 +412,10 @@ export default function SimulatorPage() {
         setCallProgressText('Call Completed.');
         
         const finalOutcome = template.outcome;
-        const finalSummary = template.summary.replace('student', call.studentId.name);
+        const finalSummary = template.summary
+          .replace(/{studentName}/g, studentFullName)
+          .replace(/{studentFirstName}/g, studentFirstName)
+          .replace(/{parentName}/g, parentName);
         
         setActiveOutcome(finalOutcome);
         setActiveSummary(finalSummary);
@@ -422,6 +450,11 @@ export default function SimulatorPage() {
           if (callData.success) {
             setCalls(callData.calls);
           }
+          
+          // Automatically reset to IDLE after 4 seconds to continue the queue
+          setTimeout(() => {
+            setCallStatus('IDLE');
+          }, 4000);
         }
       };
 

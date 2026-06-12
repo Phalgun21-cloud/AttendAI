@@ -3,22 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
-import { 
-  Users, 
-  CheckCircle, 
-  XCircle, 
-  Percent, 
-  PhoneCall, 
-  Loader2, 
-  RefreshCw, 
-  QrCode, 
-  ArrowUpRight, 
+import {
+  Users,
+  CheckCircle,
+  XCircle,
+  Percent,
+  PhoneCall,
+  Loader2,
+  RefreshCw,
+  QrCode,
+  ArrowUpRight,
   Radio
 } from 'lucide-react';
 
-import { 
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, 
-  XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Label
+import {
+  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Label,
+  CartesianGrid
 } from 'recharts';
 
 interface DashboardStats {
@@ -44,7 +45,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [timeRange, setTimeRange] = useState<'daily' | 'monthly' | 'quarterly'>('daily');
-  const [absenteesActiveIndex, setAbsenteesActiveIndex] = useState<number | null>(null);
+  const [absenteesActiveName, setAbsenteesActiveName] = useState<string | null>(null);
 
   const fetchDashboardStats = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -64,7 +65,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchDashboardStats();
-    
+
     // Auto refresh every 10 seconds to make the demo feel alive!
     const interval = setInterval(() => {
       fetchDashboardStats();
@@ -158,17 +159,16 @@ export default function DashboardPage() {
                 Class presentation rates tracked over different time periods.
               </p>
             </div>
-            
+
             <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-800">
               {(['daily', 'monthly', 'quarterly'] as const).map((range) => (
                 <button
                   key={range}
                   onClick={() => setTimeRange(range)}
-                  className={`px-3 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer ${
-                    timeRange === range
-                      ? 'bg-emerald-500/20 text-emerald-400 font-semibold'
-                      : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900'
-                  }`}
+                  className={`px-3 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer ${timeRange === range
+                    ? 'bg-emerald-500/20 text-emerald-400 font-semibold'
+                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900'
+                    }`}
                 >
                   {range}
                 </button>
@@ -181,23 +181,23 @@ export default function DashboardPage() {
                 <AreaChart data={stats[`${timeRange}History`]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="#52525b" 
-                    fontSize={10} 
+                  <XAxis
+                    dataKey="date"
+                    stroke="#52525b"
+                    fontSize={10}
                     fontFamily="monospace"
-                    tickLine={false} 
+                    tickLine={false}
                     axisLine={false}
                   />
-                  <YAxis 
-                    stroke="#52525b" 
-                    fontSize={10} 
+                  <YAxis
+                    stroke="#52525b"
+                    fontSize={10}
                     fontFamily="monospace"
-                    tickLine={false} 
+                    tickLine={false}
                     axisLine={false}
                     domain={[0, 100]}
                     tickFormatter={(v) => `${v}%`}
@@ -207,14 +207,16 @@ export default function DashboardPage() {
                     labelStyle={{ color: '#fafafa', fontFamily: 'monospace', fontSize: '11px' }}
                     itemStyle={{ color: '#10b981', fontSize: '11px' }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="rate" 
-                    stroke="#10b981" 
+                  <Area
+                    type="linear"
+                    dataKey="rate"
+                    stroke="#10b981"
                     strokeWidth={2}
-                    fillOpacity={1} 
-                    fill="url(#colorRate)" 
+                    fillOpacity={1}
+                    fill="url(#colorRate)"
                     name="Attendance Rate"
+                    dot={{ r: 4, fill: "#10b981", strokeWidth: 2, stroke: "#18181b" }}
+                    activeDot={{ r: 6, fill: "#10b981", strokeWidth: 2, stroke: "#fff" }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -232,120 +234,121 @@ export default function DashboardPage() {
               Batch-wise breakdown of absent students.
             </p>
           </div>
-          <div className="h-64 w-full relative flex items-center justify-center">
+          <div className="h-64 w-full flex flex-col">
             {stats && stats.absenteesByBatch ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                  <Pie
-                    data={stats.absenteesByBatch}
-                    innerRadius={50}
-                    outerRadius={66}
-                    paddingAngle={6}
-                    dataKey="value"
-                    stroke="#18181b"
-                    strokeWidth={3}
-                    nameKey="name"
-                    labelLine={false}
-                    label={false}
-                    onMouseEnter={(_, index) => setAbsenteesActiveIndex(index)}
-                    onMouseLeave={() => setAbsenteesActiveIndex(null)}
-                  >
-                    <Label 
-                      content={({ viewBox }) => {
-                        const { cx, cy } = viewBox as any;
-                        const total = stats.absenteesByBatch.reduce((sum, item) => sum + item.value, 0);
-                        return (
-                          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">
-                            <tspan x={cx} dy="-0.1em" fill="white" fontSize="28" fontWeight="bold" fontFamily="monospace">
-                              {total}
-                            </tspan>
-                            <tspan x={cx} dy="1.6em" fill="#71717a" fontSize="9" fontWeight="bold" letterSpacing="0.1em">
-                              TOTAL
-                            </tspan>
-                          </text>
-                        );
-                      }}
-                    />
-                    {stats.absenteesByBatch.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={['#f43f5e', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'][index % 6]} 
-                        fillOpacity={absenteesActiveIndex === null || absenteesActiveIndex === index ? 1 : 0.3}
-                        style={{ 
-                          outline: 'none', 
-                          filter: absenteesActiveIndex === index ? 'drop-shadow(0 0 10px rgba(255,255,255,0.15))' : 'none',
-                          transition: 'all 0.3s ease'
-                        }}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    cursor={{ fill: 'transparent' }}
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const data = payload[0].payload;
-                        const total = stats.absenteesByBatch.reduce((sum, item) => sum + item.value, 0);
-                        const percent = total > 0 ? (data.value / total) * 100 : 0;
-                        const color = ['#f43f5e', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'][payload[0].payload.index || stats.absenteesByBatch.findIndex(b => b.name === data.name) % 6];
-
-                        return (
-                          <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800/50 rounded-xl p-3.5 shadow-2xl z-50">
-                            <div className="flex items-center gap-2.5 mb-1.5">
-                              <div className="w-2.5 h-2.5 rounded-full shadow-inner" style={{ backgroundColor: color }} />
-                              <p className="text-zinc-300 text-xs font-semibold tracking-wide">{data.name}</p>
-                            </div>
-                            <div className="flex items-end gap-3 pl-5">
-                              <p className="text-white text-2xl font-bold font-mono leading-none">
-                                {data.value} <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-normal">absent</span>
-                              </p>
-                              <p className="text-zinc-400 text-xs font-mono font-medium mb-0.5">
-                                {(percent).toFixed(1)}%
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Legend 
-                    verticalAlign="bottom"
-                    content={(props: any) => {
-                      const { payload } = props;
-                      const total = stats.absenteesByBatch.reduce((sum, item) => sum + item.value, 0);
-                      return (
-                        <div className="flex flex-wrap justify-center gap-2 pt-4 pb-2 px-1">
-                          {payload.map((entry: any, index: number) => {
-                            const data = entry.payload;
-                            if (data.value === 0) return null;
-                            const percent = total > 0 ? (data.value / total) * 100 : 0;
+              <>
+                <div className="flex-1 w-full min-h-0 relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                      <Pie
+                        data={stats.absenteesByBatch}
+                        innerRadius={50}
+                        outerRadius={66}
+                        paddingAngle={6}
+                        dataKey="value"
+                        stroke="#18181b"
+                        strokeWidth={3}
+                        nameKey="name"
+                        labelLine={false}
+                        label={false}
+                        onMouseEnter={(data: any) => setAbsenteesActiveName(data?.name || null)}
+                        onMouseLeave={() => setAbsenteesActiveName(null)}
+                      >
+                        <Label
+                          position="center"
+                          content={(props: any) => {
+                            const { viewBox } = props;
+                            if (!viewBox || viewBox.cx === undefined || viewBox.cy === undefined) return null;
+                            const { cx, cy } = viewBox;
+                            const total = stats.absenteesByBatch.reduce((sum: number, item: any) => sum + item.value, 0);
                             return (
-                              <div 
-                                key={`legend-${index}`} 
-                                className="flex items-center gap-2 bg-zinc-900/80 border border-zinc-800/80 rounded-full px-2.5 py-1.5 cursor-default transition-all duration-200"
-                                onMouseEnter={() => setAbsenteesActiveIndex(index)}
-                                onMouseLeave={() => setAbsenteesActiveIndex(null)}
-                                style={{ 
-                                  opacity: absenteesActiveIndex === null || absenteesActiveIndex === index ? 1 : 0.3,
-                                  boxShadow: absenteesActiveIndex === index ? `0 0 12px ${entry.color}15` : 'none',
-                                  borderColor: absenteesActiveIndex === index ? `${entry.color}40` : ''
-                                }}
-                              >
-                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color, boxShadow: `0 0 6px ${entry.color}80` }} />
-                                <span className="text-zinc-300 text-[10px] font-medium truncate max-w-[90px]">{data.name}</span>
-                                <div className="flex items-center gap-1.5 pl-1.5 border-l border-zinc-800/80">
-                                  <span className="text-white text-[10px] font-bold">{data.value}</span>
-                                  <span className="text-zinc-500 text-[9px] font-mono">({percent.toFixed(0)}%)</span>
+                              <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">
+                                <tspan x={cx} dy="-0.2em" fill="white" fontSize="28" fontWeight="bold" fontFamily="monospace">
+                                  {total}
+                                </tspan>
+                                <tspan x={cx} dy="1.6em" fill="#71717a" fontSize="9" fontWeight="bold" letterSpacing="0.1em">
+                                  TOTAL
+                                </tspan>
+                              </text>
+                            );
+                          }}
+                        />
+                        {stats.absenteesByBatch.map((entry: any, index: number) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={['#f43f5e', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'][index % 6]}
+                            fillOpacity={absenteesActiveName === null || absenteesActiveName === entry.name ? 1 : 0.3}
+                            style={{
+                              outline: 'none',
+                              filter: absenteesActiveName === entry.name ? 'drop-shadow(0 0 10px rgba(255,255,255,0.15))' : 'none',
+                              transition: 'all 0.3s ease'
+                            }}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        cursor={{ fill: 'transparent' }}
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            const total = stats.absenteesByBatch.reduce((sum: number, item: any) => sum + item.value, 0);
+                            const percent = total > 0 ? (data.value / total) * 100 : 0;
+                            const color = ['#f43f5e', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'][payload[0].payload.index || stats.absenteesByBatch.findIndex((b: any) => b.name === data.name) % 6];
+
+                            return (
+                              <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800/50 rounded-xl p-3.5 shadow-2xl z-50">
+                                <div className="flex items-center gap-2.5 mb-1.5">
+                                  <div className="w-2.5 h-2.5 rounded-full shadow-inner" style={{ backgroundColor: color }} />
+                                  <p className="text-zinc-300 text-xs font-semibold tracking-wide">{data.name}</p>
+                                </div>
+                                <div className="flex items-end gap-3 pl-5">
+                                  <p className="text-white text-2xl font-bold font-mono leading-none">
+                                    {data.value} <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-normal">absent</span>
+                                  </p>
+                                  <p className="text-zinc-400 text-xs font-mono font-medium mb-0.5">
+                                    {(percent).toFixed(1)}%
+                                  </p>
                                 </div>
                               </div>
                             );
-                          })}
+                          }
+                          return null;
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Custom Legend Wrapper outside of Recharts */}
+                <div className="w-full flex flex-wrap justify-center gap-2 pt-3 overflow-y-auto max-h-[88px] scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent pr-1">
+                  {stats.absenteesByBatch.map((data: any, index: number) => {
+                    if (data.value === 0) return null;
+                    const total = stats.absenteesByBatch.reduce((sum: number, item: any) => sum + item.value, 0);
+                    const percent = total > 0 ? (data.value / total) * 100 : 0;
+                    const color = ['#f43f5e', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'][index % 6];
+                    return (
+                      <div
+                        key={`legend-${index}`}
+                        className="flex items-center gap-2 bg-zinc-900/80 border border-zinc-800/80 rounded-full px-2.5 py-1.5 cursor-default transition-all duration-200"
+                        onMouseEnter={() => setAbsenteesActiveName(data.name)}
+                        onMouseLeave={() => setAbsenteesActiveName(null)}
+                        style={{
+                          opacity: absenteesActiveName === null || absenteesActiveName === data.name ? 1 : 0.3,
+                          boxShadow: absenteesActiveName === data.name ? `0 0 12px ${color}15` : 'none',
+                          borderColor: absenteesActiveName === data.name ? `${color}40` : ''
+                        }}
+                      >
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}80` }} />
+                        <span className="text-zinc-300 text-[10px] font-medium truncate max-w-[150px]">{data.name}</span>
+                        <div className="flex items-center gap-1.5 pl-1.5 border-l border-zinc-800/80">
+                          <span className="text-white text-[10px] font-bold">{data.value}</span>
+                          <span className="text-zinc-500 text-[9px] font-mono">({percent.toFixed(0)}%)</span>
                         </div>
-                      );
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             ) : null}
           </div>
         </div>
@@ -357,50 +360,53 @@ export default function DashboardPage() {
               Batch Performance
             </h3>
             <p className="text-zinc-500 text-xs mt-0.5 font-light">
-              Current attendance rates split by academic stream batches.
+              30-day avg attendance rates split by academic stream batches.
             </p>
           </div>
           <div className="h-64 w-full">
-            {stats && stats.batchStats.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.batchStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#52525b" 
-                    fontSize={9} 
-                    fontFamily="monospace"
-                    tickLine={false} 
-                    axisLine={false}
-                  />
-                  <YAxis 
-                    stroke="#52525b" 
-                    fontSize={10} 
-                    fontFamily="monospace"
-                    tickLine={false} 
-                    axisLine={false}
-                    domain={[0, 100]}
-                    tickFormatter={(v) => `${v}%`}
-                  />
-                  <Tooltip
-                    contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
-                    labelStyle={{ color: '#fafafa', fontFamily: 'monospace', fontSize: '11px' }}
-                    itemStyle={{ color: '#10b981', fontSize: '11px' }}
-                  />
-                  <Bar 
-                    dataKey="rate" 
-                    fill="#18181b" 
-                    stroke="#27272a" 
-                    radius={[4, 4, 0, 0]}
-                    name="Attendance %"
-                  >
-                    {/* Highlight the best batch or colorize */}
-                    {stats.batchStats.map((entry, idx) => (
-                      <rect key={idx} fill={entry.rate > 80 ? '#10b981' : '#27272a'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : null}
+            {stats && stats.batchStats && stats.batchStats.length > 0 ? (
+              <div className="flex flex-col w-full gap-5 px-2 justify-center h-full">
+                {stats.batchStats.map((batch, idx) => {
+                  const isExcellent = batch.rate >= 80;
+                  const isWarning = batch.rate >= 50 && batch.rate < 80;
+                  
+                  const colorClass = isExcellent 
+                    ? 'from-emerald-500 to-emerald-400 shadow-emerald-500/40' 
+                    : isWarning 
+                    ? 'from-amber-500 to-amber-400 shadow-amber-500/40' 
+                    : 'from-red-500 to-red-400 shadow-red-500/40';
+                  
+                  const textColor = isExcellent ? 'text-emerald-400' : isWarning ? 'text-amber-400' : 'text-red-400';
+
+                  return (
+                    <div key={idx} className="relative group">
+                      <div className="flex justify-between items-end mb-2.5 px-1">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full bg-gradient-to-tr ${colorClass} shadow-[0_0_10px_currentColor]`} />
+                          <span className="text-xs font-semibold text-zinc-200 font-mono tracking-wide">{batch.name}</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className={`text-xl font-black font-mono leading-none ${textColor}`}>{batch.rate}</span>
+                          <span className="text-[10px] text-zinc-500 font-mono font-medium">%</span>
+                        </div>
+                      </div>
+                      <div className="h-3.5 w-full bg-zinc-950 rounded-full overflow-hidden border border-zinc-800/80 relative shadow-inner">
+                        <div 
+                          className={`absolute top-0 left-0 h-full rounded-full bg-gradient-to-r ${colorClass} transition-all duration-1000 ease-out`}
+                          style={{ width: `${batch.rate}%` }}
+                        >
+                          <div className="absolute inset-0 bg-white/20 w-full h-full transform -skew-x-12 translate-x-4 opacity-50"></div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-zinc-500 font-mono text-sm">
+                No batch data available
+              </div>
+            )}
           </div>
         </div>
 
@@ -411,33 +417,64 @@ export default function DashboardPage() {
               Call Outcomes
             </h3>
             <p className="text-zinc-500 text-xs mt-0.5 font-light">
-              Precise breakdown of today's follow-ups.
+              Precise breakdown of recent follow-ups (Last 30 Days).
             </p>
           </div>
           <div className="h-64 w-full flex items-center justify-center">
-            {stats && stats.callOutcomes ? (
+            {stats && stats.callOutcomes && stats.callOutcomes.some((c: any) => c.value > 0) ? (
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                <PieChart>
+                  <defs>
+                    <linearGradient id="pieEmerald" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#34d399" stopOpacity={1}/>
+                      <stop offset="100%" stopColor="#059669" stopOpacity={0.8}/>
+                    </linearGradient>
+                    <linearGradient id="pieAmber" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#fbbf24" stopOpacity={1}/>
+                      <stop offset="100%" stopColor="#d97706" stopOpacity={0.8}/>
+                    </linearGradient>
+                    <linearGradient id="pieRed" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#f87171" stopOpacity={1}/>
+                      <stop offset="100%" stopColor="#dc2626" stopOpacity={0.8}/>
+                    </linearGradient>
+                    <linearGradient id="pieZinc" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#a1a1aa" stopOpacity={1}/>
+                      <stop offset="100%" stopColor="#52525b" stopOpacity={0.8}/>
+                    </linearGradient>
+                  </defs>
                   <Pie
                     data={stats.callOutcomes}
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
+                    innerRadius={70}
+                    outerRadius={95}
+                    paddingAngle={6}
                     dataKey="value"
-                    stroke="none"
+                    stroke="rgba(0,0,0,0)"
+                    cornerRadius={8}
                   >
-                    <Cell key="cell-0" fill="#10b981" /> {/* Answered - Emerald */}
-                    <Cell key="cell-1" fill="#f59e0b" /> {/* Voicemail - Amber */}
-                    <Cell key="cell-2" fill="#ef4444" /> {/* Failed - Red */}
-                    <Cell key="cell-3" fill="#52525b" /> {/* Queued - Zinc */}
+                    {stats.callOutcomes.map((entry, index) => {
+                      const fills = ['url(#pieEmerald)', 'url(#pieAmber)', 'url(#pieRed)', 'url(#pieZinc)'];
+                      return <Cell key={`cell-${index}`} fill={fills[index % fills.length]} />;
+                    })}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
-                    itemStyle={{ fontSize: '11px', fontFamily: 'monospace', color: '#fafafa' }}
+                  <Tooltip
+                    contentStyle={{ background: 'rgba(9, 9, 11, 0.95)', backdropFilter: 'blur(10px)', border: '1px solid #27272a', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)' }}
+                    itemStyle={{ color: '#fafafa', fontSize: '14px', fontWeight: '800', fontFamily: 'monospace' }}
+                  />
+                  <Legend 
+                    verticalAlign="middle" 
+                    align="right" 
+                    layout="vertical"
+                    iconType="circle"
+                    iconSize={10}
+                    wrapperStyle={{ fontSize: '12px', color: '#a1a1aa', fontFamily: 'monospace', paddingLeft: '10px' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
-            ) : null}
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-zinc-500 font-mono text-sm">
+                No call data available
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -472,13 +509,12 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="text-right space-y-0.5">
-                    <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold leading-none ${
-                      scan.status === 'PRESENT' 
-                        ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                        : scan.status === 'LATE'
+                    <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold leading-none ${scan.status === 'PRESENT'
+                      ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                      : scan.status === 'LATE'
                         ? 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
                         : 'bg-red-500/10 border border-red-500/20 text-red-400'
-                    }`}>
+                      }`}>
                       {scan.status}
                     </span>
                     <span className="block text-[9px] text-zinc-500 font-mono mt-0.5">
@@ -523,13 +559,12 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="text-right space-y-0.5">
-                    <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold leading-none ${
-                      call.status === 'COMPLETED' 
-                        ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                        : call.status === 'CALLING'
+                    <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold leading-none ${call.status === 'COMPLETED'
+                      ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                      : call.status === 'CALLING'
                         ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400 animate-pulse'
                         : 'bg-zinc-800 border border-zinc-850 text-zinc-400'
-                    }`}>
+                      }`}>
                       {call.status}
                     </span>
                     <span className="block text-[9px] text-zinc-500 truncate max-w-[120px] ml-auto font-mono mt-0.5">
