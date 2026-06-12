@@ -35,6 +35,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
+    let startTime = '08:00';
+    try {
+      const timePart = timeSlot.split('-')[0].trim();
+      const [time, period] = timePart.split(' ');
+      let [hours, minutes] = time.split(':');
+      let hrs = parseInt(hours, 10);
+      if (period && period.toUpperCase() === 'PM' && hrs < 12) hrs += 12;
+      if (period && period.toUpperCase() === 'AM' && hrs === 12) hrs = 0;
+      startTime = `${hrs.toString().padStart(2, '0')}:${minutes || '00'}`;
+    } catch (e) {
+      console.error('Could not parse startTime', e);
+    }
+
     let batch: any;
     if (isMockDb()) {
       batch = mockDbHelper.createBatch(name, course, timeSlot);
@@ -43,7 +56,7 @@ export async function POST(request: Request) {
       if (existingBatch) {
         return NextResponse.json({ success: false, error: 'Batch name already exists' }, { status: 400 });
       }
-      batch = await Batch.create({ name, course, timeSlot });
+      batch = await Batch.create({ name, course, timeSlot, startTime });
     }
     return NextResponse.json({ success: true, batch });
   } catch (error: any) {

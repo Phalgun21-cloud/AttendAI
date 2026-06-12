@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
 import Sidebar from '@/components/dashboard/sidebar';
+import AutomationEngine from '@/components/dashboard/AutomationEngine';
 import React from 'react';
 
 export default async function DashboardLayout({
@@ -26,6 +27,9 @@ export default async function DashboardLayout({
           {children}
         </main>
       </div>
+      
+      {/* Background Automation Engine */}
+      <AutomationEngine />
     </div>
   );
 }

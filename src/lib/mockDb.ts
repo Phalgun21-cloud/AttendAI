@@ -30,12 +30,12 @@ export function seedMockDb() {
     { _id: 's6', studentId: 'STD006', name: 'Ishita Sen', parentName: 'Anil Sen', parentPhone: '+919876543215', batchId: 'b3', course: 'Class 10 Board', rfidCardId: 'RFID-STD006' },
   ];
 
-  // Seed historical attendance (last 7 days)
+  // Seed historical attendance (last 90 days)
   const today = new Date();
   mockAttendance = [];
   mockCalls = [];
 
-  for (let i = 7; i > 0; i--) {
+  for (let i = 90; i > 0; i--) {
     const logDate = new Date();
     logDate.setDate(today.getDate() - i);
     if (logDate.getDay() === 0 || logDate.getDay() === 6) continue; // skip weekends
@@ -129,8 +129,10 @@ export const mockDbHelper = {
   },
 
   // Batches
-  getBatches: () => {
-    return mockBatches;
+  getBatches: () => mockBatches,
+  updateBatchCheck: (batchId: string) => {
+    const idx = mockBatches.findIndex(b => b._id === batchId);
+    if (idx !== -1) mockBatches[idx].lastAbsenteeCheck = new Date();
   },
   createBatch: (name: string, course: string, timeSlot: string) => {
     const batch = { _id: `b${mockBatches.length + 1}`, name, course, timeSlot };
@@ -249,6 +251,20 @@ export const mockDbHelper = {
     mockAttendance.push(log);
     return log;
   },
+  markAbsentee: (studentId: string) => {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const log = {
+      _id: `a_new_abs_${mockAttendance.length + 1}`,
+      studentId: studentId,
+      date: startOfDay,
+      timestamp: new Date(),
+      status: 'ABSENT',
+      source: 'MANUAL'
+    };
+    mockAttendance.push(log);
+    return log;
+  },
   clearTodaysAttendance: () => {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
@@ -335,8 +351,16 @@ export const mockDbHelper = {
   getCalls: () => {
     return mockCalls.map(c => ({
       ...c,
-      studentId: mockStudents.find(s => s._id === c.studentId) || c.studentId
-    })).sort((a, b) => new Date(b.createdAt || b.timestamp).getTime() - new Date(a.createdAt || a.timestamp).getTime());
+      studentId: mockStudents.find(s => s._id === c.studentId)
+    })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  },
+  createCall: (callData: any) => {
+    const log = {
+      _id: `c_new_${mockCalls.length + 1}`,
+      ...callData
+    };
+    mockCalls.push(log);
+    return log;
   },
   updateCallSimulation: (id: string, status: string, transcript?: any[], summary?: string, outcome?: string) => {
     const idx = mockCalls.findIndex(c => c._id === id);
@@ -385,10 +409,10 @@ export const mockDbHelper = {
     const callsToday = todaysCalls.length;
 
     const callOutcomes = [
-      { name: 'Answered', value: todaysCalls.filter(c => c.status === 'COMPLETED' && c.outcome === 'Answered').length || Math.floor(callsToday * 0.4) },
-      { name: 'Voicemail', value: todaysCalls.filter(c => c.status === 'COMPLETED' && c.outcome === 'Voicemail').length || Math.floor(callsToday * 0.3) },
-      { name: 'Failed', value: todaysCalls.filter(c => c.status === 'FAILED').length || Math.floor(callsToday * 0.1) },
-      { name: 'Queued', value: todaysCalls.filter(c => c.status === 'QUEUED' || c.status === 'CALLING').length || (callsToday - Math.floor(callsToday * 0.8)) }
+      { name: 'Answered', value: mockCalls.filter(c => c.status === 'COMPLETED' && c.outcome === 'Answered').length },
+      { name: 'Voicemail', value: mockCalls.filter(c => c.status === 'COMPLETED' && c.outcome === 'Voicemail').length },
+      { name: 'Failed', value: mockCalls.filter(c => c.status === 'FAILED').length },
+      { name: 'Queued', value: mockCalls.filter(c => c.status === 'QUEUED' || c.status === 'CALLING').length }
     ];
 
     // Daily History
@@ -418,22 +442,76 @@ export const mockDbHelper = {
     }
 
     const monthlyHistory = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const baseRate = 80 + (i % 15);
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    for (let i = 5; i >= 0; i--) {
+      const startOfMonth = new Date();
+      startOfMonth.setMonth(startOfMonth.getMonth() - i);
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
+      const endOfMonth = new Date(startOfMonth);
+      endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+      endOfMonth.setDate(0);
+      endOfMonth.setHours(23, 59, 59, 999);
+
+      const logsInMonth = mockAttendance.filter(a => {
+        const time = new Date(a.timestamp).getTime();
+        return time >= startOfMonth.getTime() && time <= endOfMonth.getTime();
+      });
+
+      const dailyCounts: Record<string, number> = {};
+      logsInMonth.forEach(log => {
+        const d = new Date(log.timestamp);
+        const dateKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+        if (!dailyCounts[dateKey]) dailyCounts[dateKey] = 0;
+        if (log.status === 'PRESENT' || log.status === 'LATE') dailyCounts[dateKey]++;
+      });
+
+      const daysWithLogs = Object.keys(dailyCounts);
+      let monthRate = 0;
+      if (daysWithLogs.length > 0) {
+        const sumOfRates = daysWithLogs.reduce((sum, key) => sum + (totalStudents > 0 ? (dailyCounts[key] / totalStudents) * 100 : 0), 0);
+        monthRate = Math.round(sumOfRates / daysWithLogs.length);
+      }
+
       monthlyHistory.push({
-        date: (d.getMonth() + 1) + '/' + d.getDate(),
-        rate: baseRate
+        date: monthNames[startOfMonth.getMonth()],
+        rate: monthRate
       });
     }
 
     const quarterlyHistory = [];
     for (let i = 11; i >= 0; i--) {
-      const baseRate = 75 + (i % 20);
+      const startOfWeek = new Date();
+      startOfWeek.setDate(startOfWeek.getDate() - (i * 7 + 7));
+      startOfWeek.setHours(0, 0, 0, 0);
+      const endOfWeek = new Date();
+      endOfWeek.setDate(endOfWeek.getDate() - (i * 7));
+      endOfWeek.setHours(23, 59, 59, 999);
+      
+      const logsOnWeek = mockAttendance.filter(a => {
+        const time = new Date(a.timestamp).getTime();
+        return time >= startOfWeek.getTime() && time <= endOfWeek.getTime();
+      });
+      
+      const dailyCounts: Record<string, number> = {};
+      logsOnWeek.forEach(log => {
+        const d = new Date(log.timestamp);
+        const dateKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+        if (!dailyCounts[dateKey]) dailyCounts[dateKey] = 0;
+        if (log.status === 'PRESENT' || log.status === 'LATE') dailyCounts[dateKey]++;
+      });
+
+      const daysWithLogs = Object.keys(dailyCounts);
+      let weekRate = 0;
+      if (daysWithLogs.length > 0) {
+        const sumOfRates = daysWithLogs.reduce((sum, key) => sum + (totalStudents > 0 ? (dailyCounts[key] / totalStudents) * 100 : 0), 0);
+        weekRate = Math.round(sumOfRates / daysWithLogs.length);
+      }
+
       quarterlyHistory.push({
         date: 'Week ' + (12 - i),
-        rate: baseRate
+        rate: weekRate
       });
     }
 
@@ -442,15 +520,17 @@ export const mockDbHelper = {
       const batchStudents = mockStudents.filter(s => s.batchId === batch._id);
       const studentIds = batchStudents.map(s => s._id);
 
-      const presentInBatch = todaysLogs.filter(a => 
-        studentIds.includes(a.studentId) && (a.status === 'PRESENT' || a.status === 'LATE')
-      ).length;
+      const batchLogs = mockAttendance.filter(a => studentIds.includes(a.studentId));
+      const presentLogs = batchLogs.filter(a => a.status === 'PRESENT' || a.status === 'LATE').length;
+      
+      const uniqueDays = new Set(batchLogs.map(a => new Date(a.timestamp).toISOString().split('T')[0])).size;
+      const expectedLogs = studentIds.length * (uniqueDays || 1);
 
-      const rate = studentIds.length > 0 ? Math.round((presentInBatch / studentIds.length) * 100) : 0;
+      const rate = expectedLogs > 0 ? Math.round((presentLogs / expectedLogs) * 100) : 0;
 
       return {
         name: batch.name.replace(' Batch', ''),
-        present: presentInBatch,
+        present: presentLogs,
         total: studentIds.length,
         rate
       };
