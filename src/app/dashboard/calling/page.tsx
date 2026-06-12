@@ -31,6 +31,7 @@ interface Call {
   summary: string;
   outcome: string;
   createdAt: string;
+  smsSent?: boolean;
 }
 
 export default function CallingDashboardPage() {
@@ -159,9 +160,16 @@ export default function CallingDashboardPage() {
                       <span className="font-semibold text-white truncate">
                         {call.studentId?.name || 'Unknown student'}
                       </span>
-                      <span className={`px-2 py-0.5 border text-[9px] font-mono font-bold rounded leading-none ${getStatusBadge(call.status)}`}>
-                        {call.status}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {call.smsSent && (
+                          <span className="px-1.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded text-[8px] font-bold tracking-widest uppercase">
+                            SMS
+                          </span>
+                        )}
+                        <span className={`px-2 py-0.5 border text-[9px] font-mono font-bold rounded leading-none ${getStatusBadge(call.status)}`}>
+                          {call.status}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="flex justify-between text-[10px] text-zinc-500 font-mono">
@@ -194,9 +202,16 @@ export default function CallingDashboardPage() {
                       <h2 className="text-lg font-bold text-white leading-none">
                         {activeCall.studentId?.name || 'Unknown Student'}
                       </h2>
-                      <span className={`px-2 py-0.5 border text-[9px] font-mono font-bold rounded uppercase ${getStatusBadge(activeCall.status)}`}>
-                        {activeCall.status}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {activeCall.smsSent && (
+                          <span className="px-1.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded text-[9px] font-bold tracking-widest uppercase">
+                            SMS Delivered
+                          </span>
+                        )}
+                        <span className={`px-2 py-0.5 border text-[9px] font-mono font-bold rounded uppercase ${getStatusBadge(activeCall.status)}`}>
+                          {activeCall.status}
+                        </span>
+                      </div>
                     </div>
                     <p className="text-zinc-400 text-xs font-light">
                       Parent Phone Number: <strong className="text-zinc-200 font-mono font-normal">{activeCall.parentPhone}</strong>
@@ -238,7 +253,7 @@ export default function CallingDashboardPage() {
                             }`}
                           >
                             <span className="block text-[8px] font-mono text-zinc-500 uppercase tracking-widest mb-1 font-bold">
-                              {t.speaker === 'AI' ? 'AttendAI Agent' : 'Parent'}
+                              {t.speaker === 'AI' ? 'Attendee Agent' : 'Parent'}
                             </span>
                             {t.text}
                           </div>

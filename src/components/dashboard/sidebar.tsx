@@ -1,13 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { 
   LayoutDashboard, 
   Users, 
-  Barcode, 
+  CreditCard, 
   Cpu, 
   PhoneCall, 
   FileBarChart, 
@@ -20,12 +20,75 @@ import {
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [scanToast, setScanToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+  // Global Physical Hardware Scanner Listener (RFID Keyboard Wedge)
+  useEffect(() => {
+    let buffer = '';
+    let lastKeyTime = Date.now();
+
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      // Ignore if typing in an input field
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+      const currentTime = Date.now();
+      
+      // Increase timeout to 1000ms so manual typing works for testing
+      if (currentTime - lastKeyTime > 1000) {
+        buffer = '';
+      }
+      lastKeyTime = currentTime;
+
+      // Ignore modifiers
+      if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return;
+
+      if (e.key === 'Enter') {
+        if (buffer.length > 0) {
+          e.preventDefault();
+          const scannedCode = buffer;
+          buffer = '';
+          
+          try {
+            const res = await fetch('/api/attendance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                rfidCardId: scannedCode,
+                source: 'RFID_SCANNER',
+                status: 'PRESENT'
+              })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+              setScanToast({ 
+                message: `Logged ${data.log.studentId?.name || scannedCode}. SMS Dispatched.`, 
+                type: 'success' 
+              });
+            } else {
+              setScanToast({ message: `Scan Failed: ${data.error}`, type: 'error' });
+            }
+          } catch (err) {
+            setScanToast({ message: 'Network error processing scan.', type: 'error' });
+          }
+          
+          setTimeout(() => setScanToast(null), 5000);
+        }
+      } else {
+        if (e.key.length === 1) buffer += e.key;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const menuItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Student Directory', href: '/dashboard/students', icon: Users },
     { name: 'Batch Directory', href: '/dashboard/batches', icon: Layers },
-    { name: 'Barcode ID Card Gen', href: '/dashboard/qr-generator', icon: Barcode },
+    { name: 'RFID Enrollment', href: '/dashboard/rfid-setup', icon: CreditCard },
     { name: 'Simulators', href: '/dashboard/simulator', icon: Cpu },
     { name: 'AI Call Center', href: '/dashboard/calling', icon: PhoneCall },
     { name: 'Reports', href: '/dashboard/reports', icon: FileBarChart },
@@ -41,7 +104,7 @@ export default function Sidebar() {
             A
           </div>
           <div>
-            <span className="font-bold text-white tracking-wide text-base">AttendAI</span>
+            <span className="font-bold text-white tracking-wide text-base">Attendee</span>
             <span className="block text-[9px] font-mono text-emerald-400 uppercase tracking-widest leading-none mt-0.5">
               MVP V1.0
             </span>
@@ -94,6 +157,16 @@ export default function Sidebar() {
           Sign Out
         </button>
       </div>
+
+      {/* Global Scan Toast Notification */}
+      {scanToast && (
+        <div className={`fixed bottom-6 left-64 ml-6 px-4 py-3 rounded-lg shadow-2xl border font-mono text-xs flex items-center gap-3 z-50 animate-in slide-in-from-bottom-5 ${
+          scanToast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'
+        }`}>
+          <Barcode className="h-4 w-4" />
+          {scanToast.message}
+        </div>
+      )}
     </aside>
   );
 }

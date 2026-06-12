@@ -343,7 +343,7 @@ export default function StudentDetailsPage() {
                         className={`flex flex-col ${line.speaker === 'AI' ? 'items-start' : 'items-end'}`}
                       >
                         <span className="text-[10px] font-mono text-zinc-500 mb-1 px-1">
-                          {line.speaker === 'AI' ? 'AttendAI Agent' : 'Parent'}
+                          {line.speaker === 'AI' ? 'Attendee Agent' : 'Parent'}
                         </span>
                         <div 
                           className={`px-4 py-2.5 rounded-2xl max-w-[85%] ${

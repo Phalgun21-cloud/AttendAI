@@ -137,15 +137,15 @@ export async function PUT(
 
     await dbConnect();
     const body = await request.json();
-    const { name, photoUrl, parentName, parentPhone, batchId, course } = body;
+    const { name, photoUrl, parentName, parentPhone, batchId, course, rfidCardId } = body;
 
     let student: any;
     if (isMockDb()) {
-      student = mockDbHelper.updateStudent(id, name, photoUrl || '', parentName, parentPhone, batchId, course);
+      student = mockDbHelper.updateStudent(id, name, photoUrl || '', parentName, parentPhone, batchId, course, rfidCardId);
     } else {
       student = await Student.findByIdAndUpdate(
         id,
-        { name, photoUrl, parentName, parentPhone, batchId, course },
+        { name, photoUrl, parentName, parentPhone, batchId, course, rfidCardId },
         { new: true }
       );
     }

@@ -10,7 +10,7 @@ export async function GET() {
   try {
     await dbConnect();
 
-    let stats;
+    let stats: any;
     if (isMockDb()) {
       stats = mockDbHelper.getDashboardStats();
     } else {
@@ -127,6 +127,7 @@ export async function GET() {
       // 6. Batch performance today
       const batches = await Batch.find({});
       const batchStats = [];
+      const absenteesByBatch = [];
 
       for (const batch of batches) {
         // Find students in this batch
@@ -141,11 +142,17 @@ export async function GET() {
 
         const rate = studentIds.length > 0 ? Math.round((presentInBatch / studentIds.length) * 100) : 0;
 
+        const name = batch.name.replace(' Batch', ''); // shorten name
         batchStats.push({
-          name: batch.name.replace(' Batch', ''), // shorten name
+          name,
           present: presentInBatch,
           total: studentIds.length,
           rate
+        });
+
+        absenteesByBatch.push({
+          name,
+          value: studentIds.length - presentInBatch
         });
       }
 
@@ -174,6 +181,7 @@ export async function GET() {
         monthlyHistory,
         quarterlyHistory,
         batchStats,
+        absenteesByBatch,
         recentScans: recentScans.map((rs: any) => ({
           id: rs._id,
           studentName: rs.studentId?.name || 'Unknown',

@@ -10,7 +10,8 @@ const CallSchema = new Schema({
     text: { type: String, required: true }
   }],
   summary: { type: String, default: '' },
-  outcome: { type: String, default: '' }
+  outcome: { type: String, default: '' },
+  smsSent: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export const Call = mongoose.models.Call || mongoose.model('Call', CallSchema);

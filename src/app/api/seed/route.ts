@@ -18,7 +18,7 @@ export async function GET() {
         success: true,
         message: 'In-memory mock database re-seeded successfully!',
         users: {
-          superadmin: 'superadmin@attendai.com (pw: password123)'
+          superadmin: 'superadmin@attendee.com (pw: password123)'
         }
       });
     }
@@ -36,7 +36,7 @@ export async function GET() {
     // Create users
     const superAdmin = await User.create({
       name: 'Phalgun (Super Admin)',
-      email: 'superadmin@attendai.com',
+      email: 'superadmin@attendee.com',
       password: hashedPassword,
       role: 'SUPER_ADMIN',
     });
@@ -62,12 +62,12 @@ export async function GET() {
 
     // Create Students
     const studentsData = [
-      { studentId: 'STD001', name: 'Aman Gupta', parentName: 'Ramesh Gupta', parentPhone: '+919876543210', batchId: batch1._id, course: 'IIT-JEE Prep', qrCodeData: 'QR-STD001' },
-      { studentId: 'STD002', name: 'Sneha Sharma', parentName: 'Sunita Sharma', parentPhone: '+919876543211', batchId: batch1._id, course: 'IIT-JEE Prep', qrCodeData: 'QR-STD002' },
-      { studentId: 'STD003', name: 'Rohit Kumar', parentName: 'Vijay Kumar', parentPhone: '+919876543212', batchId: batch2._id, course: 'NEET Prep', qrCodeData: 'QR-STD003' },
-      { studentId: 'STD004', name: 'Priya Patel', parentName: 'Dinesh Patel', parentPhone: '+919876543213', batchId: batch2._id, course: 'NEET Prep', qrCodeData: 'QR-STD004' },
-      { studentId: 'STD005', name: 'Aditya Singh', parentName: 'Karan Singh', parentPhone: '+919876543214', batchId: batch3._id, course: 'Class 10 Board', qrCodeData: 'QR-STD005' },
-      { studentId: 'STD006', name: 'Ishita Sen', parentName: 'Anil Sen', parentPhone: '+919876543215', batchId: batch3._id, course: 'Class 10 Board', qrCodeData: 'QR-STD006' },
+      { studentId: 'STD001', name: 'Aman Gupta', parentName: 'Ramesh Gupta', parentPhone: '+919876543210', batchId: batch1._id, course: 'IIT-JEE Prep', rfidCardId: 'RFID-STD001' },
+      { studentId: 'STD002', name: 'Sneha Sharma', parentName: 'Sunita Sharma', parentPhone: '+919876543211', batchId: batch1._id, course: 'IIT-JEE Prep', rfidCardId: 'RFID-STD002' },
+      { studentId: 'STD003', name: 'Rohit Kumar', parentName: 'Vijay Kumar', parentPhone: '+919876543212', batchId: batch2._id, course: 'NEET Prep', rfidCardId: 'RFID-STD003' },
+      { studentId: 'STD004', name: 'Priya Patel', parentName: 'Dinesh Patel', parentPhone: '+919876543213', batchId: batch2._id, course: 'NEET Prep', rfidCardId: 'RFID-STD004' },
+      { studentId: 'STD005', name: 'Aditya Singh', parentName: 'Karan Singh', parentPhone: '+919876543214', batchId: batch3._id, course: 'Class 10 Board', rfidCardId: 'RFID-STD005' },
+      { studentId: 'STD006', name: 'Ishita Sen', parentName: 'Anil Sen', parentPhone: '+919876543215', batchId: batch3._id, course: 'Class 10 Board', rfidCardId: 'RFID-STD006' },
     ];
 
     const seededStudents = await Student.insertMany(studentsData);
@@ -99,8 +99,13 @@ export async function GET() {
         const scanTime = new Date(logDate);
         scanTime.setHours(8 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 60), 0);
 
+        const logDateMidnight = new Date(logDate);
+        logDateMidnight.setHours(0, 0, 0, 0);
+
         attendanceLogs.push({
           studentId: student._id,
+          date: logDateMidnight,
+          inTime: scanTime,
           timestamp: scanTime,
           status,
           source
@@ -117,22 +122,28 @@ export async function GET() {
             timestamp: callTime,
             status: 'COMPLETED',
             transcript: [
-              { speaker: 'AI', text: `Hello, this is AttendAI calling from the Coaching Institute. We noticed that ${student.name} is absent from class today.` },
+              { speaker: 'AI', text: `Hello, this is Attendee calling from the Coaching Institute. We noticed that ${student.name} is absent from class today.` },
               { speaker: 'Parent', text: `Yes, thank you for letting me know. They are not feeling well today.` },
               { speaker: 'AI', text: `Understood, we hope they recover quickly. The class recordings and notes will be shared. Thank you.` }
             ],
             summary: `Automated call to verify absence. Parent confirmed student is unwell.`,
-            outcome: `Parent notified (Student unwell)`
+            outcome: `Parent notified (Student unwell)`,
+            smsSent: true
           });
         }
       }
     }
 
     // Seed some today's attendance logs
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     const todayDatePresent1 = new Date();
     todayDatePresent1.setHours(8, 15, 0);
     attendanceLogs.push({
       studentId: seededStudents[0]._id, // Aman
+      date: startOfToday,
+      inTime: todayDatePresent1,
       timestamp: todayDatePresent1,
       status: 'PRESENT',
       source: 'QR'
@@ -142,6 +153,8 @@ export async function GET() {
     todayDatePresent2.setHours(8, 30, 0);
     attendanceLogs.push({
       studentId: seededStudents[2]._id, // Rohit
+      date: startOfToday,
+      inTime: todayDatePresent2,
       timestamp: todayDatePresent2,
       status: 'PRESENT',
       source: 'RFID'
@@ -151,6 +164,8 @@ export async function GET() {
     todayDatePresent3.setHours(8, 45, 0);
     attendanceLogs.push({
       studentId: seededStudents[4]._id, // Aditya
+      date: startOfToday,
+      inTime: todayDatePresent3,
       timestamp: todayDatePresent3,
       status: 'PRESENT',
       source: 'MANUAL'
@@ -163,7 +178,7 @@ export async function GET() {
       success: true,
       message: 'Database seeded successfully with Users, Batches, Students, Attendance, and Call records!',
       users: {
-        superadmin: 'superadmin@attendai.com (pw: password123)'
+        superadmin: 'superadmin@attendee.com (pw: password123)'
       },
       studentsCount: seededStudents.length,
       attendanceRecords: attendanceLogs.length,

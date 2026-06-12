@@ -16,18 +16,10 @@ import {
   Radio
 } from 'lucide-react';
 
-// Dynamically import Recharts to prevent hydration issues on SSR
-const AreaChart = dynamic(() => import('recharts').then(mod => mod.AreaChart), { ssr: false });
-const Area = dynamic(() => import('recharts').then(mod => mod.Area), { ssr: false });
-const BarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false });
-const Bar = dynamic(() => import('recharts').then(mod => mod.Bar), { ssr: false });
-const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false });
-const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false });
-const Cell = dynamic(() => import('recharts').then(mod => mod.Cell), { ssr: false });
-const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false });
-const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false });
-const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
-const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+import { 
+  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, 
+  XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Label
+} from 'recharts';
 
 interface DashboardStats {
   totalStudents: number;
@@ -41,6 +33,7 @@ interface DashboardStats {
   attendanceBreakdown: Array<{ name: string; value: number }>;
   callOutcomes: Array<{ name: string; value: number }>;
   batchStats: Array<{ name: string; present: number; total: number; rate: number }>;
+  absenteesByBatch: Array<{ name: string; value: number }>;
   recentScans: Array<{ id: string; studentName: string; studentId: string; timestamp: string; status: string; source: string }>;
   recentCalls: Array<{ id: string; studentName: string; phone: string; status: string; outcome: string; timestamp: string }>;
 }
@@ -51,6 +44,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [timeRange, setTimeRange] = useState<'daily' | 'monthly' | 'quarterly'>('daily');
+  const [absenteesActiveIndex, setAbsenteesActiveIndex] = useState<number | null>(null);
 
   const fetchDashboardStats = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -228,35 +222,127 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Today's Attendance Breakdown */}
+        {/* Absentees by Batch Breakdown */}
         <div className="border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider">
-              Today's Breakdown
+            <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+              Absentees By Batch
             </h3>
             <p className="text-zinc-500 text-xs mt-0.5 font-light">
-              Precise daily presentation ratio.
+              Batch-wise breakdown of absent students.
             </p>
           </div>
-          <div className="h-64 w-full flex items-center justify-center">
-            {stats && stats.attendanceBreakdown ? (
+          <div className="h-64 w-full relative flex items-center justify-center">
+            {stats && stats.absenteesByBatch ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                   <Pie
-                    data={stats.attendanceBreakdown}
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
+                    data={stats.absenteesByBatch}
+                    innerRadius={50}
+                    outerRadius={66}
+                    paddingAngle={6}
                     dataKey="value"
-                    stroke="none"
+                    stroke="#18181b"
+                    strokeWidth={3}
+                    nameKey="name"
+                    labelLine={false}
+                    label={false}
+                    onMouseEnter={(_, index) => setAbsenteesActiveIndex(index)}
+                    onMouseLeave={() => setAbsenteesActiveIndex(null)}
                   >
-                    <Cell key="cell-0" fill="#34c759" /> {/* Present - Apple Green */}
-                    <Cell key="cell-1" fill="#ff9500" /> {/* Late - Apple Amber */}
-                    <Cell key="cell-2" fill="#ff3b30" /> {/* Absent - Apple Red */}
+                    <Label 
+                      content={({ viewBox }) => {
+                        const { cx, cy } = viewBox as any;
+                        const total = stats.absenteesByBatch.reduce((sum, item) => sum + item.value, 0);
+                        return (
+                          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">
+                            <tspan x={cx} dy="-0.1em" fill="white" fontSize="28" fontWeight="bold" fontFamily="monospace">
+                              {total}
+                            </tspan>
+                            <tspan x={cx} dy="1.6em" fill="#71717a" fontSize="9" fontWeight="bold" letterSpacing="0.1em">
+                              TOTAL
+                            </tspan>
+                          </text>
+                        );
+                      }}
+                    />
+                    {stats.absenteesByBatch.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={['#f43f5e', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'][index % 6]} 
+                        fillOpacity={absenteesActiveIndex === null || absenteesActiveIndex === index ? 1 : 0.3}
+                        style={{ 
+                          outline: 'none', 
+                          filter: absenteesActiveIndex === index ? 'drop-shadow(0 0 10px rgba(255,255,255,0.15))' : 'none',
+                          transition: 'all 0.3s ease'
+                        }}
+                      />
+                    ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ background: '#ffffff', border: '1px solid #e8e8ed', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
-                    itemStyle={{ fontSize: '11px', fontFamily: 'monospace', color: '#1d1d1f' }}
+                    cursor={{ fill: 'transparent' }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        const total = stats.absenteesByBatch.reduce((sum, item) => sum + item.value, 0);
+                        const percent = total > 0 ? (data.value / total) * 100 : 0;
+                        const color = ['#f43f5e', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'][payload[0].payload.index || stats.absenteesByBatch.findIndex(b => b.name === data.name) % 6];
+
+                        return (
+                          <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800/50 rounded-xl p-3.5 shadow-2xl z-50">
+                            <div className="flex items-center gap-2.5 mb-1.5">
+                              <div className="w-2.5 h-2.5 rounded-full shadow-inner" style={{ backgroundColor: color }} />
+                              <p className="text-zinc-300 text-xs font-semibold tracking-wide">{data.name}</p>
+                            </div>
+                            <div className="flex items-end gap-3 pl-5">
+                              <p className="text-white text-2xl font-bold font-mono leading-none">
+                                {data.value} <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-normal">absent</span>
+                              </p>
+                              <p className="text-zinc-400 text-xs font-mono font-medium mb-0.5">
+                                {(percent).toFixed(1)}%
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Legend 
+                    verticalAlign="bottom"
+                    content={(props: any) => {
+                      const { payload } = props;
+                      const total = stats.absenteesByBatch.reduce((sum, item) => sum + item.value, 0);
+                      return (
+                        <div className="flex flex-wrap justify-center gap-2 pt-4 pb-2 px-1">
+                          {payload.map((entry: any, index: number) => {
+                            const data = entry.payload;
+                            if (data.value === 0) return null;
+                            const percent = total > 0 ? (data.value / total) * 100 : 0;
+                            return (
+                              <div 
+                                key={`legend-${index}`} 
+                                className="flex items-center gap-2 bg-zinc-900/80 border border-zinc-800/80 rounded-full px-2.5 py-1.5 cursor-default transition-all duration-200"
+                                onMouseEnter={() => setAbsenteesActiveIndex(index)}
+                                onMouseLeave={() => setAbsenteesActiveIndex(null)}
+                                style={{ 
+                                  opacity: absenteesActiveIndex === null || absenteesActiveIndex === index ? 1 : 0.3,
+                                  boxShadow: absenteesActiveIndex === index ? `0 0 12px ${entry.color}15` : 'none',
+                                  borderColor: absenteesActiveIndex === index ? `${entry.color}40` : ''
+                                }}
+                              >
+                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color, boxShadow: `0 0 6px ${entry.color}80` }} />
+                                <span className="text-zinc-300 text-[10px] font-medium truncate max-w-[90px]">{data.name}</span>
+                                <div className="flex items-center gap-1.5 pl-1.5 border-l border-zinc-800/80">
+                                  <span className="text-white text-[10px] font-bold">{data.value}</span>
+                                  <span className="text-zinc-500 text-[9px] font-mono">({percent.toFixed(0)}%)</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }}
                   />
                 </PieChart>
               </ResponsiveContainer>

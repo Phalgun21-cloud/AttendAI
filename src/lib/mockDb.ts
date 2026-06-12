@@ -12,7 +12,7 @@ export function seedMockDb() {
   const hashedPassword = bcrypt.hashSync('password123', 10);
 
   mockUsers = [
-    { _id: 'u1', name: 'Phalgun (Super Admin)', email: 'superadmin@attendai.com', password: hashedPassword, role: 'SUPER_ADMIN' }
+    { _id: 'u1', name: 'Phalgun (Super Admin)', email: 'superadmin@attendee.com', password: hashedPassword, role: 'SUPER_ADMIN' }
   ];
 
   mockBatches = [
@@ -22,12 +22,12 @@ export function seedMockDb() {
   ];
 
   mockStudents = [
-    { _id: 's1', studentId: 'STD001', name: 'Aman Gupta', parentName: 'Ramesh Gupta', parentPhone: '+919876543210', batchId: 'b1', course: 'IIT-JEE Prep', qrCodeData: 'QR-STD001' },
-    { _id: 's2', studentId: 'STD002', name: 'Sneha Sharma', parentName: 'Sunita Sharma', parentPhone: '+919876543211', batchId: 'b1', course: 'IIT-JEE Prep', qrCodeData: 'QR-STD002' },
-    { _id: 's3', studentId: 'STD003', name: 'Rohit Kumar', parentName: 'Vijay Kumar', parentPhone: '+919876543212', batchId: 'b2', course: 'NEET Prep', qrCodeData: 'QR-STD003' },
-    { _id: 's4', studentId: 'STD004', name: 'Priya Patel', parentName: 'Dinesh Patel', parentPhone: '+919876543213', batchId: 'b2', course: 'NEET Prep', qrCodeData: 'QR-STD004' },
-    { _id: 's5', studentId: 'STD005', name: 'Aditya Singh', parentName: 'Karan Singh', parentPhone: '+919876543214', batchId: 'b3', course: 'Class 10 Board', qrCodeData: 'QR-STD005' },
-    { _id: 's6', studentId: 'STD006', name: 'Ishita Sen', parentName: 'Anil Sen', parentPhone: '+919876543215', batchId: 'b3', course: 'Class 10 Board', qrCodeData: 'QR-STD006' },
+    { _id: 's1', studentId: 'STD001', name: 'Aman Gupta', parentName: 'Ramesh Gupta', parentPhone: '+919876543210', batchId: 'b1', course: 'IIT-JEE Prep', rfidCardId: 'RFID-STD001' },
+    { _id: 's2', studentId: 'STD002', name: 'Sneha Sharma', parentName: 'Sunita Sharma', parentPhone: '+919876543211', batchId: 'b1', course: 'IIT-JEE Prep', rfidCardId: 'RFID-STD002' },
+    { _id: 's3', studentId: 'STD003', name: 'Rohit Kumar', parentName: 'Vijay Kumar', parentPhone: '+919876543212', batchId: 'b2', course: 'NEET Prep', rfidCardId: 'RFID-STD003' },
+    { _id: 's4', studentId: 'STD004', name: 'Priya Patel', parentName: 'Dinesh Patel', parentPhone: '+919876543213', batchId: 'b2', course: 'NEET Prep', rfidCardId: 'RFID-STD004' },
+    { _id: 's5', studentId: 'STD005', name: 'Aditya Singh', parentName: 'Karan Singh', parentPhone: '+919876543214', batchId: 'b3', course: 'Class 10 Board', rfidCardId: 'RFID-STD005' },
+    { _id: 's6', studentId: 'STD006', name: 'Ishita Sen', parentName: 'Anil Sen', parentPhone: '+919876543215', batchId: 'b3', course: 'Class 10 Board', rfidCardId: 'RFID-STD006' },
   ];
 
   // Seed historical attendance (last 7 days)
@@ -74,7 +74,7 @@ export function seedMockDb() {
           timestamp: callTime,
           status: 'COMPLETED',
           transcript: [
-            { speaker: 'AI', text: `Hello, this is AttendAI calling from the Coaching Institute. We noticed that ${student.name} is absent from class today.` },
+            { speaker: 'AI', text: `Hello, this is Attendee calling from the Coaching Institute. We noticed that ${student.name} is absent from class today.` },
             { speaker: 'Parent', text: `Yes, thank you for letting me know. They are not feeling well today.` },
             { speaker: 'AI', text: `Understood, we hope they recover quickly. The class recordings and notes will be shared. Thank you.` }
           ],
@@ -163,16 +163,25 @@ export const mockDbHelper = {
       parentPhone,
       batchId,
       course,
-      qrCodeData: `QR-${studentId}`
+      rfidCardId: `RFID-${studentId}`
     };
     mockStudents.push(student);
     return student;
   },
-  updateStudent: (id: string, name: string, photoUrl: string, parentName: string, parentPhone: string, batchId: string, course: string) => {
-    const idx = mockStudents.findIndex(s => s._id === id);
-    if (idx === -1) return null;
-    mockStudents[idx] = { ...mockStudents[idx], name, photoUrl, parentName, parentPhone, batchId, course };
-    return mockStudents[idx];
+  updateStudent: (id: string, name: string, photoUrl: string, parentName: string, parentPhone: string, batchId: string, course: string, rfidCardId?: string) => {
+    const studentIndex = mockStudents.findIndex(s => s._id === id);
+    if (studentIndex === -1) return null;
+    mockStudents[studentIndex] = {
+      ...mockStudents[studentIndex],
+      name,
+      photoUrl,
+      parentName,
+      parentPhone,
+      batchId,
+      course,
+      ...(rfidCardId && { rfidCardId })
+    };
+    return mockStudents[studentIndex];
   },
   deleteStudent: (id: string) => {
     const idx = mockStudents.findIndex(s => s._id === id);
@@ -206,9 +215,9 @@ export const mockDbHelper = {
       })).find(s => s._id === a.studentId)
     })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   },
-  logAttendance: (studentId: string, source: string, status: string) => {
-    const student = mockStudents.find(s => s.studentId === studentId || s.qrCodeData === studentId);
-    if (!student) return null;
+  logAttendance: (studentId: string, source: 'RFID_SCANNER' | 'MANUAL', status?: string) => {
+    const student = mockStudents.find(s => s.studentId === studentId || s.rfidCardId === studentId);
+    if (!student) throw new Error('Student not found');
 
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
@@ -217,26 +226,39 @@ export const mockDbHelper = {
 
     const existingIdx = mockAttendance.findIndex(a => 
       a.studentId === student._id && 
-      new Date(a.timestamp).getTime() >= startOfDay.getTime() &&
-      new Date(a.timestamp).getTime() <= endOfDay.getTime()
+      (a.date ? new Date(a.date).getTime() === startOfDay.getTime() : new Date(a.timestamp).getTime() >= startOfDay.getTime() && new Date(a.timestamp).getTime() <= endOfDay.getTime())
     );
 
     if (existingIdx !== -1) {
-      mockAttendance[existingIdx].status = status || 'PRESENT';
-      mockAttendance[existingIdx].source = source || 'MANUAL';
+      mockAttendance[existingIdx].outTime = new Date();
       mockAttendance[existingIdx].timestamp = new Date();
+      mockAttendance[existingIdx].status = 'PRESENT';
+      mockAttendance[existingIdx].source = source || 'MANUAL';
       return mockAttendance[existingIdx];
     }
 
     const log = {
       _id: `a_new_${mockAttendance.length + 1}`,
       studentId: student._id,
+      date: startOfDay,
+      inTime: new Date(),
       timestamp: new Date(),
-      status: status || 'PRESENT',
+      status: 'PARTIAL',
       source: source || 'QR'
     };
     mockAttendance.push(log);
     return log;
+  },
+  clearTodaysAttendance: () => {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    mockAttendance = mockAttendance.filter(a => {
+      const time = new Date(a.timestamp).getTime();
+      return !(time >= startOfDay.getTime() && time <= endOfDay.getTime());
+    });
   },
   detectAbsentees: () => {
     const startOfDay = new Date();
@@ -251,7 +273,7 @@ export const mockDbHelper = {
 
     const presentStudentIds = new Set(
       todaysScans
-        .filter(a => a.status === 'PRESENT' || a.status === 'LATE')
+        .filter(a => a.status === 'PRESENT' || a.status === 'LATE' || a.status === 'PARTIAL')
         .map(a => a.studentId)
     );
 
@@ -273,6 +295,7 @@ export const mockDbHelper = {
           mockAttendance.push({
             _id: `a_abs_${student._id}_today`,
             studentId: student._id,
+            date: startOfDay,
             timestamp: new Date(),
             status: 'ABSENT',
             source: 'MANUAL'
@@ -296,7 +319,8 @@ export const mockDbHelper = {
             transcript: [],
             summary: '',
             outcome: '',
-            createdAt: new Date()
+            createdAt: new Date(),
+            smsSent: true
           };
           mockCalls.push(call);
           callsQueued.push(call);
@@ -432,6 +456,11 @@ export const mockDbHelper = {
       };
     });
 
+    const absenteesByBatch = batchStats.map(bs => ({
+      name: bs.name,
+      value: bs.total - bs.present
+    }));
+
     const recentScans = todaysLogs.slice(0, 5).map(a => {
       const stud = mockStudents.find(s => s._id === a.studentId);
       return {
@@ -468,6 +497,7 @@ export const mockDbHelper = {
       monthlyHistory,
       quarterlyHistory,
       batchStats,
+      absenteesByBatch,
       recentScans,
       recentCalls
     };

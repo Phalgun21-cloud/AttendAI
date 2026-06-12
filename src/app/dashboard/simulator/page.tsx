@@ -24,7 +24,7 @@ interface Student {
   studentId: string;
   name: string;
   parentPhone: string;
-  qrCodeData: string;
+  rfidCardId: string;
   course: string;
 }
 
@@ -36,6 +36,7 @@ interface Call {
   transcript: Array<{ speaker: 'AI' | 'Parent'; text: string }>;
   summary: string;
   outcome: string;
+  smsSent?: boolean;
 }
 
 interface ConsoleLog {
@@ -51,12 +52,18 @@ export default function SimulatorPage() {
 
   // Scan states
   const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [rfidInput, setRfidInput] = useState('');
+  const rfidInputRef = useRef<HTMLInputElement>(null);
   const [selectedSource, setSelectedSource] = useState<'QR' | 'RFID' | 'BIOMETRIC' | 'FACE' | 'MANUAL'>('QR');
   const [selectedStatus, setSelectedStatus] = useState<'PRESENT' | 'LATE'>('PRESENT');
   const [scanLoading, setScanLoading] = useState(false);
 
   // Absentee trigger state
   const [detectLoading, setDetectLoading] = useState(false);
+
+  // Auto scanner state
+  const [isAutoScanning, setIsAutoScanning] = useState(false);
+  const [clearLoading, setClearLoading] = useState(false);
 
   // Call simulation states
   const [activeCall, setActiveCall] = useState<Call | null>(null);
@@ -111,36 +118,52 @@ export default function SimulatorPage() {
 
   useEffect(() => {
     loadInitialData();
-    addLog('AttendAI Simulation Node Initialized.', 'info');
+    addLog('Attendee Simulation Node Initialized.', 'info');
     addLog('Awaiting hardware inputs or engine events...', 'info');
+    if (rfidInputRef.current) {
+      rfidInputRef.current.focus();
+    }
   }, []);
 
   // Simulate hardware scan
   const handleSimulateScan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedStudentId) return;
+    
+    let targetStudent: Student | undefined;
+    let payload: any = {};
+
+    if (rfidInput) {
+      targetStudent = students.find(s => s.rfidCardId === rfidInput || s.studentId === rfidInput);
+      payload = { rfidCardId: rfidInput, source: selectedSource };
+      addLog(`Hardware Terminal trigger: RFID scan input received: "${rfidInput}"`, 'info');
+    } else {
+      if (!selectedStudentId) return;
+      targetStudent = students.find(s => s._id === selectedStudentId);
+      if (!targetStudent) return;
+      payload = { studentId: targetStudent.studentId, source: selectedSource };
+      addLog(`Hardware Terminal trigger: ${selectedSource} select scan for ${targetStudent.name} (${targetStudent.studentId})`, 'info');
+    }
 
     setScanLoading(true);
-    const targetStudent = students.find(s => s._id === selectedStudentId);
-    if (!targetStudent) return;
-
-    addLog(`Hardware Terminal trigger: ${selectedSource} sensor read for ${targetStudent.name} (${targetStudent.studentId})`, 'info');
 
     try {
       const res = await fetch('/api/attendance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentId: targetStudent.studentId,
-          source: selectedSource,
-          status: selectedStatus
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
       if (data.success) {
-        addLog(`[DATABASE] Logged attendance: ${targetStudent.name} is ${selectedStatus}. LogId: ${data.log._id}`, 'db');
-        addLog(`[MQTT/EVENT] Broadcast packet dispatched: student_scan_status_present`, 'success');
+        const studentName = data.log.studentId?.name || targetStudent?.name || 'Unknown Student';
+        const parentPhone = data.log.studentId?.parentPhone || targetStudent?.parentPhone || 'Parent';
+
+        addLog(`[DATABASE] Logged scan for: ${studentName} (Status: ${data.log.status}). LogId: ${data.log._id}`, 'db');
+        addLog(`[MQTT/EVENT] Broadcast packet dispatched: student_scan_recorded`, 'success');
+        
+        if (data.smsSent) {
+          addLog(`[SMS_DISPATCH] Sent to Parent (${parentPhone}): "${data.smsMessage}"`, 'call');
+        }
         
         // Confetti!
         confetti({
@@ -149,6 +172,12 @@ export default function SimulatorPage() {
           origin: { y: 0.8 },
           colors: ['#064e3b', '#047857', '#ffffff']
         });
+
+        // Clear input and refocus
+        setRfidInput('');
+        if (rfidInputRef.current) {
+          rfidInputRef.current.focus();
+        }
       } else {
         addLog(`[ERROR] Database validation failed: ${data.error}`, 'error');
       }
@@ -156,6 +185,73 @@ export default function SimulatorPage() {
       addLog(`[FATAL] Hardware handshake lost. Check connection.`, 'error');
     } finally {
       setScanLoading(false);
+    }
+  };
+
+  // Auto-Scanner Loop
+  useEffect(() => {
+    if (!isAutoScanning || students.length === 0) return;
+    
+    let timeout: NodeJS.Timeout;
+    
+    const doAutoScan = async () => {
+      // Pick a random student
+      const randomStudent = students[Math.floor(Math.random() * students.length)];
+      
+      try {
+        const res = await fetch('/api/attendance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            studentId: randomStudent.studentId,
+            source: 'QR',
+            status: 'PRESENT' // The backend handles IN/OUT logic automatically
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          addLog(`[AUTO-SCANNER] Simulated walk-in/out for: ${randomStudent.name}.`, 'info');
+          addLog(`[DATABASE] Logged scan for: ${randomStudent.name} (Status: ${data.log.status}). LogId: ${data.log._id}`, 'db');
+          if (data.smsSent) {
+            addLog(`[SMS_DISPATCH] Sent to Parent (${randomStudent.parentPhone}): "${data.smsMessage}"`, 'call');
+          }
+        }
+      } catch (e) {
+        addLog(`[ERROR] Auto-scanner failed to connect.`, 'error');
+      }
+
+      timeout = setTimeout(doAutoScan, Math.floor(Math.random() * 2000) + 3000); // 3-5 seconds interval
+    };
+
+    addLog(`[AUTO-SCANNER] Initializing automated scanning mode...`, 'warning');
+    timeout = setTimeout(doAutoScan, 2000);
+
+    return () => {
+      clearTimeout(timeout);
+      if (isAutoScanning) {
+        addLog(`[AUTO-SCANNER] Halted automated scanning mode.`, 'warning');
+      }
+    };
+  }, [isAutoScanning, students]);
+
+  // Clear Today's Attendance Logs
+  const handleClearTodaysAttendance = async () => {
+    setClearLoading(true);
+    addLog("Initiating request: Clear today's attendance logs...", 'info');
+    try {
+      const res = await fetch('/api/attendance', { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        addLog("[DATABASE] Today's attendance logs successfully wiped.", 'success');
+        addLog("System ready for fresh check-in (1st scan) sequences.", 'info');
+        loadInitialData();
+      } else {
+        addLog(`[ERROR] Failed to clear attendance logs: ${data.error}`, 'error');
+      }
+    } catch (err) {
+      addLog("[FATAL] Handshake failed while clearing attendance logs.", 'error');
+    } finally {
+      setClearLoading(false);
     }
   };
 
@@ -171,7 +267,7 @@ export default function SimulatorPage() {
       if (data.success) {
         addLog(`[ENGINE] Cross-referenced daily logs against registered rosters.`, 'info');
         addLog(`[DATABASE] Added ${data.absenteesCount} ABSENT logs in Attendance collection.`, 'db');
-        addLog(`[CALL_QUEUE] Enqueued ${data.callsCount} PENDING parent follow-up phone calls.`, 'call');
+        addLog(`[CALL_QUEUE] Enqueued ${data.callsCount} PENDING parent follow-up phone calls and dispatched SMS notifications.`, 'call');
         
         if (data.absenteesCount > 0) {
           addLog(`Absentees detected: ${data.absentees.map((s: any) => s.name).join(', ')}`, 'warning');
@@ -199,7 +295,7 @@ export default function SimulatorPage() {
   const scenarios = {
     UNWELL: {
       dialogue: [
-        { speaker: 'AI', text: 'Hello, this is AttendAI calling from Coaching Institute. Am I speaking with the parent of student?' },
+        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. Am I speaking with the parent of student?' },
         { speaker: 'Parent', text: 'Yes, this is Ramesh Gupta. Is everything okay with Aman?' },
         { speaker: 'AI', text: 'Yes, everything is fine. We are just calling to verify Aman\'s absence. Aman was not in the morning batch class today.' },
         { speaker: 'Parent', text: 'Ah, yes. He caught a severe viral fever last night. He is resting now.' },
@@ -211,7 +307,7 @@ export default function SimulatorPage() {
     },
     VACATION: {
       dialogue: [
-        { speaker: 'AI', text: 'Hello, this is AttendAI calling from Coaching Institute. Am I speaking with the parent of student?' },
+        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. Am I speaking with the parent of student?' },
         { speaker: 'Parent', text: 'Yes, this is Sneha\'s mother. How can I help you?' },
         { speaker: 'AI', text: 'We noticed Sneha was absent from the IIT-JEE lecture batch today. Is everything fine?' },
         { speaker: 'Parent', text: 'Yes, we are out of town attending a family wedding. She will be absent for 2 more days.' },
@@ -223,7 +319,7 @@ export default function SimulatorPage() {
     },
     VOICEMAIL: {
       dialogue: [
-        { speaker: 'AI', text: 'Hello, this is AttendAI calling from Coaching Institute. We noticed that student was absent today...' },
+        { speaker: 'AI', text: 'Hello, this is Attendee calling from Coaching Institute. We noticed that student was absent today...' },
         { speaker: 'Parent', text: '[BEEP: Voicemail system. Please leave a message after the tone.]' },
         { speaker: 'AI', text: 'This is a reminder from Coaching Institute regarding student\'s absence today. Please call back to confirm. Thank you.' }
       ],
@@ -332,12 +428,23 @@ export default function SimulatorPage() {
     }, 2500);
   };
 
+  // Auto-dialer loop
+  useEffect(() => {
+    if (callStatus === 'IDLE') {
+      const pendingCall = calls.find(c => c.status === 'PENDING');
+      if (pendingCall) {
+        addLog(`[AUTO-DIALER] Automatically picking up next pending call for ${pendingCall.studentId.name}...`, 'info');
+        triggerCallSimulation(pendingCall);
+      }
+    }
+  }, [calls, callStatus]);
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-          AttendAI Simulators
+          Attendee Simulators
         </h1>
         <p className="text-zinc-400 mt-1 font-light text-sm">
           Simulate hardware events (QR/RFID card readers), trigger daily absentee check routines, and monitor AI-powered follow-up calls in real-time.
@@ -358,6 +465,23 @@ export default function SimulatorPage() {
               </h2>
               
               <form onSubmit={handleSimulateScan} className="space-y-4 text-xs font-light">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Hardware RFID Reader Input</label>
+                  <input
+                    ref={rfidInputRef}
+                    type="text"
+                    placeholder="Scan RFID tag or type here (e.g. RFID-STD001)..."
+                    value={rfidInput}
+                    onChange={(e) => setRfidInput(e.target.value)}
+                    className="w-full bg-zinc-950/70 border border-zinc-800 rounded-lg px-2.5 py-2 text-zinc-300 focus:outline-none focus:border-emerald-500 placeholder-zinc-650"
+                  />
+                  <p className="text-[9px] text-zinc-500 font-light">
+                    Keep this focused. Physical scanner hardware behaves like a keyboard and will automatically type and submit here.
+                  </p>
+                </div>
+
+                <div className="text-center font-mono text-[9px] text-zinc-700">— OR SELECT DIRECTLY —</div>
+
                 <div className="space-y-1">
                   <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Student Scan Target</label>
                   <select
@@ -390,29 +514,50 @@ export default function SimulatorPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Attendance State</label>
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Scan Action</label>
                     <select
                       value={selectedStatus}
                       onChange={(e: any) => setSelectedStatus(e.target.value)}
                       className="w-full bg-zinc-950/70 border border-zinc-800 rounded-lg px-2 py-2 text-zinc-300 focus:outline-none focus:border-emerald-500 cursor-pointer"
                     >
-                      <option value="PRESENT">Mark Present</option>
-                      <option value="LATE">Mark Late</option>
+                      <option value="PRESENT">Trigger Terminal Scan (IN / OUT)</option>
                     </select>
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="submit"
+                    disabled={scanLoading || !selectedStudentId || isAutoScanning}
+                    className="w-full bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wide py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {scanLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-black" />
+                    ) : (
+                      <Power className="h-3.5 w-3.5" />
+                    )}
+                    Manual Scan
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsAutoScanning(!isAutoScanning)}
+                    className={`w-full font-semibold text-xs font-mono uppercase tracking-wide py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${isAutoScanning ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30'}`}
+                  >
+                    {isAutoScanning ? 'Stop Auto-Scan' : 'Start Auto-Scan'}
+                  </button>
+                </div>
+
                 <button
-                  type="submit"
-                  disabled={scanLoading || !selectedStudentId}
-                  className="w-full bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wide py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  type="button"
+                  onClick={handleClearTodaysAttendance}
+                  disabled={clearLoading || isAutoScanning}
+                  className="w-full bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white font-semibold text-xs font-mono uppercase tracking-wide py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  {scanLoading ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-black" />
+                  {clearLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-400" />
                   ) : (
-                    <Power className="h-3.5 w-3.5" />
+                    <span className="text-red-500 font-bold font-mono">⚠️ Clear Today's Logs</span>
                   )}
-                  Simulate Reader Input
                 </button>
               </form>
             </div>
@@ -578,7 +723,7 @@ export default function SimulatorPage() {
                       }`}
                     >
                       <span className="block text-[8px] font-mono text-zinc-500 uppercase tracking-widest mb-0.5 leading-none">
-                        {t.speaker === 'AI' ? 'AttendAI Agent' : 'Parent'}
+                        {t.speaker === 'AI' ? 'Attendee Agent' : 'Parent'}
                       </span>
                       {t.text}
                     </div>
@@ -623,7 +768,14 @@ export default function SimulatorPage() {
                 calls.map((call) => (
                   <div key={call._id} className="flex items-center justify-between p-3 rounded-lg border border-zinc-850 bg-zinc-950/20 text-xs">
                     <div className="space-y-0.5">
-                      <div className="font-semibold text-white">{call.studentId?.name}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-white">{call.studentId?.name}</span>
+                        {call.smsSent && (
+                          <span className="px-1.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded text-[8px] font-bold tracking-widest uppercase">
+                            SMS SENT
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[9px] text-zinc-500 font-mono">
                         PARENT: {call.parentPhone} • STATUS: {call.status}
                       </div>
@@ -631,10 +783,10 @@ export default function SimulatorPage() {
                     {call.status === 'PENDING' ? (
                       <button
                         onClick={() => triggerCallSimulation(call)}
-                        disabled={callStatus !== 'IDLE'}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold font-mono uppercase tracking-wider bg-white hover:bg-zinc-200 text-black rounded transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                        disabled={true}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold font-mono uppercase tracking-wider bg-white/50 text-black rounded transition-all cursor-not-allowed opacity-50"
                       >
-                        Dial
+                        Auto-Dialing...
                       </button>
                     ) : (
                       <span className="text-[9px] font-mono text-zinc-500 uppercase">
