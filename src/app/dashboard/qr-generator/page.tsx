@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import JsBarcode from 'jsbarcode';
 import { jsPDF } from 'jspdf';
 import { Loader2, Barcode, FileText, CheckSquare, Square, Printer, CheckCircle2 } from 'lucide-react';
@@ -69,12 +69,14 @@ export default function QrGeneratorPage() {
   }, []);
 
   // Filter students based on Batch dropdown
-  const filteredStudents = selectedBatch
-    ? students.filter(s => {
-        const bid = typeof s.batchId === 'object' ? s.batchId._id : s.batchId;
-        return bid === selectedBatch;
-      })
-    : students;
+  const filteredStudents = useMemo(() => {
+    return selectedBatch
+      ? students.filter(s => {
+          const bid = typeof s.batchId === 'object' ? s.batchId._id : s.batchId;
+          return bid === selectedBatch;
+        })
+      : students;
+  }, [students, selectedBatch]);
 
   // Generate Barcodes for all filtered students
   useEffect(() => {

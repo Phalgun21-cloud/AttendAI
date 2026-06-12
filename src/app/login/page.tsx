@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   if (status === 'loading') {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#09090b]">
+      <div className="flex h-screen w-screen items-center justify-center bg-zinc-950">
         <div className="flex flex-col items-center gap-2">
           <Activity className="h-8 w-8 animate-spin text-emerald-500" />
           <p className="text-sm text-zinc-400 font-mono">Initializing AttendAI...</p>
@@ -58,7 +58,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 relative overflow-hidden bg-[#09090b]">
+    <div className="flex min-h-screen items-center justify-center px-4 relative overflow-hidden bg-zinc-950">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
 

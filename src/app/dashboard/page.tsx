@@ -101,7 +101,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
             Welcome back, {session?.user?.name?.split(' ')[0] || 'User'}
           </h1>
           <p className="text-zinc-400 mt-1 font-light text-sm flex items-center gap-2">
@@ -136,10 +136,10 @@ export default function DashboardPage() {
                 <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
                   {kpi.title}
                 </span>
-                <Icon className={`h-4.5 w-4.5 text-zinc-500 group-hover:text-zinc-300 transition-colors ${kpi.color || ''}`} />
+                <Icon className={`h-4.5 w-4.5 text-zinc-500 group-hover:text-zinc-350 transition-colors ${kpi.color || ''}`} />
               </div>
               <div className="mt-3">
-                <span className="text-3xl font-bold tracking-tight text-white font-mono leading-none">
+                <span className="text-3xl font-bold tracking-tight text-zinc-900 font-mono leading-none">
                   {kpi.value}
                 </span>
                 <span className="block text-[10px] text-zinc-500 font-light mt-1.5 leading-none">
@@ -157,7 +157,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+              <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider">
                 Attendance Trend
               </h3>
               <p className="text-zinc-500 text-xs mt-0.5 font-light">
@@ -187,20 +187,20 @@ export default function DashboardPage() {
                 <AreaChart data={stats[`${timeRange}History`]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#064e3b" stopOpacity={0.15}/>
+                      <stop offset="95%" stopColor="#064e3b" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <XAxis 
                     dataKey="date" 
-                    stroke="#52525b" 
+                    stroke="#4b5563" 
                     fontSize={10} 
                     fontFamily="monospace"
                     tickLine={false} 
                     axisLine={false}
                   />
                   <YAxis 
-                    stroke="#52525b" 
+                    stroke="#4b5563" 
                     fontSize={10} 
                     fontFamily="monospace"
                     tickLine={false} 
@@ -209,15 +209,15 @@ export default function DashboardPage() {
                     tickFormatter={(v) => `${v}%`}
                   />
                   <Tooltip
-                    contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
-                    labelStyle={{ color: '#fafafa', fontFamily: 'monospace', fontSize: '11px' }}
-                    itemStyle={{ color: '#10b981', fontSize: '11px' }}
+                    contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                    labelStyle={{ color: '#111827', fontFamily: 'monospace', fontSize: '11px' }}
+                    itemStyle={{ color: '#064e3b', fontSize: '11px' }}
                   />
                   <Area 
                     type="monotone" 
                     dataKey="rate" 
-                    stroke="#10b981" 
-                    strokeWidth={2}
+                    stroke="#064e3b" 
+                    strokeWidth={2.5}
                     fillOpacity={1} 
                     fill="url(#colorRate)" 
                     name="Attendance Rate"
@@ -231,7 +231,7 @@ export default function DashboardPage() {
         {/* Today's Attendance Breakdown */}
         <div className="border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
           <div>
-            <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider">
               Today's Breakdown
             </h3>
             <p className="text-zinc-500 text-xs mt-0.5 font-light">
@@ -250,13 +250,13 @@ export default function DashboardPage() {
                     dataKey="value"
                     stroke="none"
                   >
-                    <Cell key="cell-0" fill="#10b981" /> {/* Present - Emerald */}
-                    <Cell key="cell-1" fill="#f59e0b" /> {/* Late - Amber */}
-                    <Cell key="cell-2" fill="#ef4444" /> {/* Absent - Red */}
+                    <Cell key="cell-0" fill="#34c759" /> {/* Present - Apple Green */}
+                    <Cell key="cell-1" fill="#ff9500" /> {/* Late - Apple Amber */}
+                    <Cell key="cell-2" fill="#ff3b30" /> {/* Absent - Apple Red */}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
-                    itemStyle={{ fontSize: '11px', fontFamily: 'monospace', color: '#fafafa' }}
+                    contentStyle={{ background: '#ffffff', border: '1px solid #e8e8ed', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                    itemStyle={{ fontSize: '11px', fontFamily: 'monospace', color: '#1d1d1f' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -267,7 +267,7 @@ export default function DashboardPage() {
         {/* Batch Performance comparison */}
         <div className="lg:col-span-2 border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
           <div>
-            <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider">
               Batch Performance
             </h3>
             <p className="text-zinc-500 text-xs mt-0.5 font-light">
@@ -280,14 +280,14 @@ export default function DashboardPage() {
                 <BarChart data={stats.batchStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <XAxis 
                     dataKey="name" 
-                    stroke="#52525b" 
+                    stroke="#86868b" 
                     fontSize={9} 
                     fontFamily="monospace"
                     tickLine={false} 
                     axisLine={false}
                   />
                   <YAxis 
-                    stroke="#52525b" 
+                    stroke="#86868b" 
                     fontSize={10} 
                     fontFamily="monospace"
                     tickLine={false} 
@@ -296,20 +296,20 @@ export default function DashboardPage() {
                     tickFormatter={(v) => `${v}%`}
                   />
                   <Tooltip
-                    contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
-                    labelStyle={{ color: '#fafafa', fontFamily: 'monospace', fontSize: '11px' }}
-                    itemStyle={{ color: '#10b981', fontSize: '11px' }}
+                    contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                    labelStyle={{ color: '#111827', fontFamily: 'monospace', fontSize: '11px' }}
+                    itemStyle={{ color: '#064e3b', fontSize: '11px' }}
                   />
                   <Bar 
                     dataKey="rate" 
-                    fill="#18181b" 
-                    stroke="#27272a" 
+                    fill="#e2e8f0" 
+                    stroke="#cbd5e1" 
                     radius={[4, 4, 0, 0]}
                     name="Attendance %"
                   >
                     {/* Highlight the best batch or colorize */}
                     {stats.batchStats.map((entry, idx) => (
-                      <rect key={idx} fill={entry.rate > 80 ? '#10b981' : '#27272a'} />
+                      <rect key={idx} fill={entry.rate > 80 ? '#064e3b' : '#cbd5e1'} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -321,7 +321,7 @@ export default function DashboardPage() {
         {/* AI Call Outcomes Breakdown */}
         <div className="border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
           <div>
-            <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider">
               Call Outcomes
             </h3>
             <p className="text-zinc-500 text-xs mt-0.5 font-light">
@@ -340,14 +340,14 @@ export default function DashboardPage() {
                     dataKey="value"
                     stroke="none"
                   >
-                    <Cell key="cell-0" fill="#10b981" /> {/* Answered - Emerald */}
-                    <Cell key="cell-1" fill="#f59e0b" /> {/* Voicemail - Amber */}
-                    <Cell key="cell-2" fill="#ef4444" /> {/* Failed - Red */}
-                    <Cell key="cell-3" fill="#52525b" /> {/* Queued - Zinc */}
+                    <Cell key="cell-0" fill="#34c759" /> {/* Answered - Apple Green */}
+                    <Cell key="cell-1" fill="#ff9500" /> {/* Voicemail - Apple Amber */}
+                    <Cell key="cell-2" fill="#ff3b30" /> {/* Failed - Apple Red */}
+                    <Cell key="cell-3" fill="#86868b" /> {/* Queued - Apple Gray */}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
-                    itemStyle={{ fontSize: '11px', fontFamily: 'monospace', color: '#fafafa' }}
+                    contentStyle={{ background: '#ffffff', border: '1px solid #e8e8ed', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                    itemStyle={{ fontSize: '11px', fontFamily: 'monospace', color: '#1d1d1f' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -362,7 +362,7 @@ export default function DashboardPage() {
         <div className="border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-850 pb-3">
             <div>
-              <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider flex items-center gap-1.5">
+              <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider flex items-center gap-1.5">
                 <Radio className="h-4.5 w-4.5 text-emerald-400 animate-pulse" />
                 Live Attendance Feed
               </h3>
@@ -380,7 +380,7 @@ export default function DashboardPage() {
               stats.recentScans.map((scan) => (
                 <div key={scan.id} className="flex items-center justify-between p-3 rounded-lg bg-zinc-950/40 border border-zinc-850 text-xs">
                   <div className="space-y-0.5">
-                    <div className="font-semibold text-white">{scan.studentName}</div>
+                    <div className="font-semibold text-zinc-900">{scan.studentName}</div>
                     <div className="text-[10px] text-zinc-500 font-mono">
                       ID: {scan.studentId} • VIA {scan.source}
                     </div>
@@ -413,7 +413,7 @@ export default function DashboardPage() {
         <div className="border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-850 pb-3">
             <div>
-              <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider flex items-center gap-1.5">
+              <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider flex items-center gap-1.5">
                 <PhoneCall className="h-4.5 w-4.5 text-blue-400" />
                 AI Call Tracker Feed
               </h3>
@@ -431,7 +431,7 @@ export default function DashboardPage() {
               stats.recentCalls.map((call) => (
                 <div key={call.id} className="flex items-center justify-between p-3 rounded-lg bg-zinc-950/40 border border-zinc-850 text-xs">
                   <div className="space-y-0.5">
-                    <div className="font-semibold text-white">{call.studentName}</div>
+                    <div className="font-semibold text-zinc-900">{call.studentName}</div>
                     <div className="text-[10px] text-zinc-500 font-mono">
                       PHONE: {call.phone}
                     </div>

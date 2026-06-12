@@ -147,7 +147,7 @@ export default function SimulatorPage() {
           particleCount: 50,
           spread: 40,
           origin: { y: 0.8 },
-          colors: ['#10b981', '#064e3b', '#ffffff']
+          colors: ['#064e3b', '#047857', '#ffffff']
         });
       } else {
         addLog(`[ERROR] Database validation failed: ${data.error}`, 'error');
@@ -317,7 +317,7 @@ export default function SimulatorPage() {
           confetti({
             particleCount: 40,
             spread: 30,
-            colors: ['#3b82f6', '#ffffff']
+            colors: ['#064e3b', '#ffffff']
           });
 
           // Reload calls

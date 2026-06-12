@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --popover: #09090b;
-  --popover-foreground: #fafafa;
-  --primary: #10b981; /* emerald neon accent */
-  --primary-foreground: #09090b;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --accent: #10b981;
-  --accent-foreground: #fafafa;
-  --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
-  --border: #27272a;
-  --input: #27272a;
-  --ring: #10b981;
-  --radius: 0.5rem;
+  --background: #f4f7f5; /* Soft mint mist background */
+  --foreground: #111827; /* Dark graphite text */
+  --card: #ffffff; /* White card background */
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --primary: #064e3b; /* Emerald Green Brand Accent */
+  --primary-foreground: #ffffff;
+  --secondary: #e2e8f0; /* Graphite light accent */
+  --secondary-foreground: #111827;
+  --muted: #f4f7f5;
+  --muted-foreground: #4b5563; /* Graphite caption/secondary text */
+  --accent: #064e3b;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626; /* Vibrant red */
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #ffffff;
+  --ring: #064e3b;
+  --radius: 12px;
 }
 
 @theme inline {
@@ -44,8 +44,39 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace;
+
+  /* Redefine zinc colors for Emerald & Graphite theme */
+  --color-zinc-50: #ffffff;
+  --color-zinc-100: #f4f7f5;
+  --color-zinc-200: #e2e8f0;
+  --color-zinc-300: #cbd5e1;
+  --color-zinc-400: #4b5563;
+  --color-zinc-500: #374151;
+  --color-zinc-600: #475569;
+  --color-zinc-700: #374151; /* Graphite main accent */
+  --color-zinc-800: #1f2937;
+  --color-zinc-850: #111827;
+  --color-zinc-900: #ffffff; /* white card / active links */
+  --color-zinc-950: #f4f7f5; /* main dashboard container background */
+
+  /* Map emerald to Emerald green tones */
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-300: #34d399;
+  --color-emerald-400: #059669; /* active highlight icon */
+  --color-emerald-500: #064e3b; /* primary brand */
+  --color-emerald-600: #047857;
+  --color-emerald-700: #065f46;
+  --color-emerald-800: #064e3b;
+  --color-emerald-900: #022c22;
+  --color-emerald-950: #022c22;
+
+  /* Map white and black to support Emerald & Graphite light mode */
+  --color-white: #111827; /* text-white becomes Graphite text */
+  --color-black: #ffffff; /* text-black becomes White text */
 }
 
 body {
@@ -56,17 +87,17 @@ body {
 
 /* Glassmorphism custom classes */
 .glass {
-  background: rgba(18, 18, 20, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .glass-card {
-  background: rgba(24, 24, 27, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 /* Flashing animations */
@@ -87,16 +118,248 @@ body {
 
 /* Scrollbar polish */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #94a3b8;
+}
+
+/* --- PREMIUM THEME CONTRAST & ACCENTS --- */
+
+/* Fix all text classes that were previously white/light gray to render in highly visible dark graphite */
+.text-white,
+.text-zinc-900,
+.text-zinc-950,
+.text-zinc-850,
+.text-zinc-800,
+.text-zinc-700,
+h1, h2, h3, h4, h5, h6, th {
+  color: #111827 !important;
+}
+
+/* Fix light grey text helper utilities to render in high-contrast graphite/slate tones */
+.text-zinc-200 {
+  color: #1f2937 !important; /* Muted parent names/details */
+}
+.text-zinc-300 {
+  color: #111827 !important; /* Batch assigned names */
+}
+.text-zinc-400 {
+  color: #374151 !important; /* ID numbers and subheaders */
+}
+.text-zinc-500 {
+  color: #4b5563 !important; /* Timetable logs / timestamps / icons */
+}
+.text-zinc-600 {
+  color: #4b5563 !important;
+}
+
+/* Re-allow true white text on dark background components, buttons, and status badges */
+button.text-white,
+a.text-white[class*="btn"],
+.bg-emerald-500 .text-white,
+.bg-emerald-600 .text-white,
+.bg-emerald-700 .text-white,
+.bg-emerald-800 .text-white,
+.bg-red-500 .text-white,
+.bg-red-600 .text-white,
+.bg-amber-500 .text-white,
+.bg-blue-500 .text-white,
+.bg-blue-600 .text-white,
+.text-white-force {
+  color: #ffffff !important;
+}
+
+/* Maintain specific color coding for status indicators */
+.text-emerald-400,
+.text-emerald-500 {
+  color: #059669 !important; /* Rich green */
+}
+.text-red-400,
+.text-red-500 {
+  color: #dc2626 !important; /* Rich red */
+}
+.text-amber-400,
+.text-amber-500 {
+  color: #d97706 !important; /* Rich amber/yellow */
+}
+.text-blue-400,
+.text-blue-500 {
+  color: #2563eb !important; /* Rich blue */
+}
+
+/* Style all course badge-like items using bg-zinc-800 to look like clean, high-contrast light mode badges */
+.bg-zinc-800 {
+  background-color: rgba(6, 78, 59, 0.05) !important;
+  border: 1px solid rgba(6, 78, 59, 0.12) !important;
+  color: #064e3b !important;
+}
+
+/* Force all card, table, input, and component outlines/borders to be dark graphite */
+.border,
+.border-t,
+.border-b,
+.border-r,
+.border-l,
+.border-zinc-800,
+.border-zinc-850,
+.border-zinc-900,
+.border-zinc-950,
+.border-zinc-700,
+.border-zinc-600,
+.border-zinc-500,
+.border-zinc-400,
+.border-zinc-300,
+.border-zinc-200,
+.divide-zinc-850,
+.divide-zinc-800,
+.divide-y,
+.divide-y > * {
+  border-color: #1f2937 !important; /* Crisp dark graphite outline */
+}
+
+/* Re-allow transparent border on elements designed to have no border */
+.border-transparent {
+  border-color: transparent !important;
+}
+
+/* Soft status badge borders using currentColor with transparency */
+.border-emerald-500\/20,
+.border-emerald-500\/15,
+.border-red-500\/20,
+.border-amber-500\/20,
+.border-blue-500\/20 {
+  border-color: currentColor !important;
+  opacity: 0.8;
+}
+
+/* Enhance dashboard cards with white background and crisp dark graphite borders */
+.border-zinc-850.bg-zinc-900\/10 {
+  background-color: #ffffff !important;
+  border: 1.5px solid #1f2937 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.border-zinc-850.bg-zinc-900\/10:hover {
+  border-color: #064e3b !important;
+  box-shadow: 0 8px 24px rgba(6, 78, 59, 0.06) !important;
+  transform: translateY(-1px);
+}
+
+/* Table container styling: White background with crisp dark graphite borders */
+.border-zinc-800.bg-zinc-900\/10 {
+  background-color: #ffffff !important;
+  border: 1.5px solid #1f2937 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Sidebar styling enhancements: Clean white with crisp dark graphite border-right */
+aside.bg-zinc-950 {
+  background-color: #ffffff !important;
+  border-right: 1.5px solid #1f2937 !important;
+}
+
+aside.bg-zinc-950 .border-b,
+aside.bg-zinc-950 .border-t {
+  border-color: #1f2937 !important;
+}
+
+/* Brand logo icon in sidebar: Emerald background, white text */
+aside.bg-zinc-950 .bg-white {
+  background-color: #064e3b !important;
+  color: #ffffff !important;
+}
+
+/* Active navigation links in sidebar: soft mint background with bold green branding text */
+aside.bg-zinc-950 a.bg-zinc-900 {
+  background-color: rgba(6, 78, 59, 0.08) !important;
+  color: #064e3b !important;
+  border-color: #064e3b !important;
+  font-weight: 600 !important;
+}
+
+/* Inactive navigation links transition */
+aside.bg-zinc-950 a {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Main content text input, select, and password control styling */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="search"],
+input:not([type]),
+select,
+textarea {
+  background-color: #ffffff !important;
+  border: 1.5px solid #1f2937 !important;
+  color: #111827 !important;
+  transition: all 0.2s ease !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+input:not([type]):focus,
+select:focus,
+textarea:focus {
+  border-color: #064e3b !important;
+  box-shadow: 0 0 0 3px rgba(6, 78, 59, 0.15) !important;
+}
+
+select option {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+/* Live feed scan & call log item list boxes */
+.bg-zinc-950\/40.border-zinc-850 {
+  background-color: #ffffff !important;
+  border: 1.5px solid #1f2937 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01) !important;
+  transition: all 0.2s ease !important;
+}
+
+.bg-zinc-950\/40.border-zinc-850:hover {
+  border-color: #064e3b !important;
+  box-shadow: 0 4px 12px rgba(6, 78, 59, 0.04) !important;
+}
+
+/* Table head background */
+thead.bg-zinc-950\/60 {
+  background-color: rgba(6, 78, 59, 0.03) !important;
+  border-bottom: 1.5px solid #1f2937 !important;
+}
+
+/* Table row hover action */
+tr.hover\:bg-zinc-900\/30:hover {
+  background-color: rgba(6, 78, 59, 0.015) !important;
+}
+
+/* Buttons in dashboard */
+button.bg-white,
+a.bg-white {
+  background-color: #064e3b !important;
+  color: #ffffff !important;
+  transition: all 0.2s ease !important;
+}
+
+button.bg-white:hover,
+a.bg-white:hover {
+  background-color: #047857 !important;
+  transform: translateY(-1px);
 }
