@@ -62,8 +62,9 @@ export async function POST(request: Request) {
       log = { ...log, studentId: studentObj };
       
       if (log.outTime) {
-        // Second scan of the day -> OUT scan (without time)
-        smsMessage = `Dear Parent, ${log.studentId.name} has left the institute.`;
+        // Second scan of the day -> OUT scan (with time)
+        const outTimeStr = new Date(log.outTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        smsMessage = `Dear Parent, ${log.studentId.name} has left the institute at ${outTimeStr}.`;
       } else {
         // First scan of the day -> IN scan (with time)
         const inTimeStr = new Date(log.inTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -72,9 +73,9 @@ export async function POST(request: Request) {
     } else {
       let student = null;
       if (studentId) {
-        student = await Student.findOne({ studentId });
+        student = await Student.findOne({ studentId }).populate('batchId');
       } else if (rfidCardId) {
-        student = await Student.findOne({ rfidCardId });
+        student = await Student.findOne({ rfidCardId }).populate('batchId');
       }
 
       if (!student) {
@@ -105,17 +106,30 @@ export async function POST(request: Request) {
           path: 'studentId',
           populate: { path: 'batchId' }
         });
-        // Second scan SMS -> WITHOUT TIME
-        smsMessage = `Dear Parent, ${log.studentId.name} has left the institute.`;
+        // Second scan SMS -> WITH TIME
+        const outTimeStr = existingAttendance.outTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        smsMessage = `Dear Parent, ${log.studentId.name} has left the institute at ${outTimeStr}.`;
       } else {
         // First scan of the day -> IN scan
+        // Check if student is late based on batch startTime (30 min grace period)
+        let attendanceStatus = 'PARTIAL';
+        const batchStartTimeStr = student.batchId?.startTime;
+        if (batchStartTimeStr) {
+          const [hours, mins] = batchStartTimeStr.split(':').map(Number);
+          const batchDate = new Date();
+          batchDate.setHours(hours, mins + 30, 0, 0); // Cutoff time
+          if (new Date() > batchDate) {
+            attendanceStatus = 'LATE';
+          }
+        }
+
         const attendance = await Attendance.create({
           studentId: student._id,
           date: startOfDay,
           inTime: new Date(),
           timestamp: new Date(),
-          status: 'PARTIAL', // Partial until they scan out
-          source: source || 'QR',
+          status: attendanceStatus, // LATE or PARTIAL
+          source: source || 'RFID',
         });
         log = await Attendance.findById(attendance._id).populate({
           path: 'studentId',

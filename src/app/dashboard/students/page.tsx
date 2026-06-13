@@ -106,7 +106,7 @@ export default function StudentDirectoryPage() {
   const openCreateModal = () => {
     setModalMode('CREATE');
     setSelectedStudent(null);
-    setFormStudentId(`STD${Math.floor(100 + Math.random() * 900)}`);
+    setFormStudentId(`PRN${students.length + 1}`);
     setFormName('');
     setFormParentName('');
     setFormParentPhone('');
