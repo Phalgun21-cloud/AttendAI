@@ -16,7 +16,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-950">
+    <div className="flex h-screen overflow-hidden bg-zinc-950 dashboard-theme">
       {/* Sidebar navigation */}
       <Sidebar />
 

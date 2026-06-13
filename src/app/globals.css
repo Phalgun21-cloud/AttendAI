@@ -77,6 +77,17 @@
   /* Map white and black to support Emerald & Graphite light mode */
   --color-white: #111827; /* text-white becomes Graphite text */
   --color-black: #ffffff; /* text-black becomes White text */
+
+  /* Cinematic Theme Colors */
+  --color-cinematic-bg: #0A0A0A;
+  --color-cinematic-surface: #141414;
+  --color-cinematic-border: rgba(255, 255, 255, 0.08);
+  --color-cinematic-border-soft: rgba(255, 255, 255, 0.06);
+  --color-cinematic-primary: #FFFFFF;
+  --color-cinematic-secondary: #A3A3A3;
+  --color-cinematic-accent: #4F46E5;
+  --color-cinematic-success: #22C55E;
+  --color-cinematic-warning: #F59E0B;
 }
 
 body {
@@ -132,234 +143,371 @@ body {
   background: #94a3b8;
 }
 
-/* --- PREMIUM THEME CONTRAST & ACCENTS --- */
+/* --- SCOPED DASHBOARD CONTRAST & ACCENTS --- */
 
-/* Fix all text classes that were previously white/light gray to render in highly visible dark graphite */
-.text-white,
-.text-zinc-900,
-.text-zinc-950,
-.text-zinc-850,
-.text-zinc-800,
-.text-zinc-700,
-h1, h2, h3, h4, h5, h6, th {
+.dashboard-theme .text-white,
+.dashboard-theme .text-zinc-900,
+.dashboard-theme .text-zinc-950,
+.dashboard-theme .text-zinc-850,
+.dashboard-theme .text-zinc-800,
+.dashboard-theme .text-zinc-700,
+.dashboard-theme h1, 
+.dashboard-theme h2, 
+.dashboard-theme h3, 
+.dashboard-theme h4, 
+.dashboard-theme h5, 
+.dashboard-theme h6, 
+.dashboard-theme th {
   color: #111827 !important;
 }
 
-/* Fix light grey text helper utilities to render in high-contrast graphite/slate tones */
-.text-zinc-200 {
-  color: #1f2937 !important; /* Muted parent names/details */
+.dashboard-theme .text-zinc-200 {
+  color: #1f2937 !important;
 }
-.text-zinc-300 {
-  color: #111827 !important; /* Batch assigned names */
+.dashboard-theme .text-zinc-300 {
+  color: #111827 !important;
 }
-.text-zinc-400 {
-  color: #374151 !important; /* ID numbers and subheaders */
+.dashboard-theme .text-zinc-400 {
+  color: #374151 !important;
 }
-.text-zinc-500 {
-  color: #4b5563 !important; /* Timetable logs / timestamps / icons */
+.dashboard-theme .text-zinc-500 {
+  color: #4b5563 !important;
 }
-.text-zinc-600 {
+.dashboard-theme .text-zinc-600 {
   color: #4b5563 !important;
 }
 
-/* Re-allow true white text on dark background components, buttons, and status badges */
-button.text-white,
-a.text-white[class*="btn"],
-.bg-emerald-500 .text-white,
-.bg-emerald-600 .text-white,
-.bg-emerald-700 .text-white,
-.bg-emerald-800 .text-white,
-.bg-red-500 .text-white,
-.bg-red-600 .text-white,
-.bg-amber-500 .text-white,
-.bg-blue-500 .text-white,
-.bg-blue-600 .text-white,
-.text-white-force {
+.dashboard-theme button.text-white,
+.dashboard-theme a.text-white[class*="btn"],
+.dashboard-theme .bg-emerald-500 .text-white,
+.dashboard-theme .bg-emerald-600 .text-white,
+.dashboard-theme .bg-emerald-700 .text-white,
+.dashboard-theme .bg-emerald-800 .text-white,
+.dashboard-theme .bg-red-500 .text-white,
+.dashboard-theme .bg-red-600 .text-white,
+.dashboard-theme .bg-amber-500 .text-white,
+.dashboard-theme .bg-blue-500 .text-white,
+.dashboard-theme .bg-blue-600 .text-white,
+.dashboard-theme .text-white-force {
   color: #ffffff !important;
 }
 
-/* Maintain specific color coding for status indicators */
-.text-emerald-400,
-.text-emerald-500 {
-  color: #059669 !important; /* Rich green */
+.dashboard-theme .text-emerald-400,
+.dashboard-theme .text-emerald-500 {
+  color: #059669 !important;
 }
-.text-red-400,
-.text-red-500 {
-  color: #dc2626 !important; /* Rich red */
+.dashboard-theme .text-red-400,
+.dashboard-theme .text-red-500 {
+  color: #dc2626 !important;
 }
-.text-amber-400,
-.text-amber-500 {
-  color: #d97706 !important; /* Rich amber/yellow */
+.dashboard-theme .text-amber-400,
+.dashboard-theme .text-amber-500 {
+  color: #d97706 !important;
 }
-.text-blue-400,
-.text-blue-500 {
-  color: #2563eb !important; /* Rich blue */
+.dashboard-theme .text-blue-400,
+.dashboard-theme .text-blue-500 {
+  color: #2563eb !important;
 }
 
-/* Style all course badge-like items using bg-zinc-800 to look like clean, high-contrast light mode badges */
-.bg-zinc-800 {
+.dashboard-theme .bg-zinc-800 {
   background-color: rgba(6, 78, 59, 0.05) !important;
   border: 1px solid rgba(6, 78, 59, 0.12) !important;
   color: #064e3b !important;
 }
 
-/* Force all card, table, input, and component outlines/borders to be dark graphite */
-.border,
-.border-t,
-.border-b,
-.border-r,
-.border-l,
-.border-zinc-800,
-.border-zinc-850,
-.border-zinc-900,
-.border-zinc-950,
-.border-zinc-700,
-.border-zinc-600,
-.border-zinc-500,
-.border-zinc-400,
-.border-zinc-300,
-.border-zinc-200,
-.divide-zinc-850,
-.divide-zinc-800,
-.divide-y,
-.divide-y > * {
-  border-color: #1f2937 !important; /* Crisp dark graphite outline */
+.dashboard-theme .border,
+.dashboard-theme .border-t,
+.dashboard-theme .border-b,
+.dashboard-theme .border-r,
+.dashboard-theme .border-l,
+.dashboard-theme .border-zinc-800,
+.dashboard-theme .border-zinc-850,
+.dashboard-theme .border-zinc-900,
+.dashboard-theme .border-zinc-950,
+.dashboard-theme .border-zinc-700,
+.dashboard-theme .border-zinc-600,
+.dashboard-theme .border-zinc-500,
+.dashboard-theme .border-zinc-400,
+.dashboard-theme .border-zinc-300,
+.dashboard-theme .border-zinc-200,
+.dashboard-theme .divide-zinc-850,
+.dashboard-theme .divide-zinc-800,
+.dashboard-theme .divide-y,
+.dashboard-theme .divide-y > * {
+  border-color: #1f2937 !important;
 }
 
-/* Re-allow transparent border on elements designed to have no border */
-.border-transparent {
+.dashboard-theme .border-transparent {
   border-color: transparent !important;
 }
 
-/* Soft status badge borders using currentColor with transparency */
-.border-emerald-500\/20,
-.border-emerald-500\/15,
-.border-red-500\/20,
-.border-amber-500\/20,
-.border-blue-500\/20 {
+.dashboard-theme .border-emerald-500\/20,
+.dashboard-theme .border-emerald-500\/15,
+.dashboard-theme .border-red-500\/20,
+.dashboard-theme .border-amber-500\/20,
+.dashboard-theme .border-blue-500\/20 {
   border-color: currentColor !important;
   opacity: 0.8;
 }
 
-/* Enhance dashboard cards with white background and crisp dark graphite borders */
-.border-zinc-850.bg-zinc-900\/10 {
+.dashboard-theme .border-zinc-850.bg-zinc-900\/10 {
   background-color: #ffffff !important;
   border: 1.5px solid #1f2937 !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.border-zinc-850.bg-zinc-900\/10:hover {
+.dashboard-theme .border-zinc-850.bg-zinc-900\/10:hover {
   border-color: #064e3b !important;
   box-shadow: 0 8px 24px rgba(6, 78, 59, 0.06) !important;
   transform: translateY(-1px);
 }
 
-/* Table container styling: White background with crisp dark graphite borders */
-.border-zinc-800.bg-zinc-900\/10 {
+.dashboard-theme .border-zinc-800.bg-zinc-900\/10 {
   background-color: #ffffff !important;
   border: 1.5px solid #1f2937 !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
 }
 
-/* Sidebar styling enhancements: Clean white with crisp dark graphite border-right */
-aside.bg-zinc-950 {
+.dashboard-theme aside.bg-zinc-950 {
   background-color: #ffffff !important;
   border-right: 1.5px solid #1f2937 !important;
 }
 
-aside.bg-zinc-950 .border-b,
-aside.bg-zinc-950 .border-t {
+.dashboard-theme aside.bg-zinc-950 .border-b,
+.dashboard-theme aside.bg-zinc-950 .border-t {
   border-color: #1f2937 !important;
 }
 
-/* Brand logo icon in sidebar: Emerald background, white text */
-aside.bg-zinc-950 .bg-white {
+.dashboard-theme aside.bg-zinc-950 .bg-white {
   background-color: #064e3b !important;
   color: #ffffff !important;
 }
 
-/* Active navigation links in sidebar: soft mint background with bold green branding text */
-aside.bg-zinc-950 a.bg-zinc-900 {
+.dashboard-theme aside.bg-zinc-950 a.bg-zinc-900 {
   background-color: rgba(6, 78, 59, 0.08) !important;
   color: #064e3b !important;
   border-color: #064e3b !important;
   font-weight: 600 !important;
 }
 
-/* Inactive navigation links transition */
-aside.bg-zinc-950 a {
+.dashboard-theme aside.bg-zinc-950 a {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-/* Main content text input, select, and password control styling */
-input[type="text"],
-input[type="password"],
-input[type="email"],
-input[type="tel"],
-input[type="number"],
-input[type="search"],
-input:not([type]),
-select,
-textarea {
+.dashboard-theme input[type="text"],
+.dashboard-theme input[type="password"],
+.dashboard-theme input[type="email"],
+.dashboard-theme input[type="tel"],
+.dashboard-theme input[type="number"],
+.dashboard-theme input[type="search"],
+.dashboard-theme input:not([type]),
+.dashboard-theme select,
+.dashboard-theme textarea {
   background-color: #ffffff !important;
   border: 1.5px solid #1f2937 !important;
   color: #111827 !important;
   transition: all 0.2s ease !important;
 }
 
-input[type="text"]:focus,
-input[type="password"]:focus,
-input[type="email"]:focus,
-input[type="tel"]:focus,
-input[type="number"]:focus,
-input[type="search"]:focus,
-input:not([type]):focus,
-select:focus,
-textarea:focus {
+.dashboard-theme input[type="text"]:focus,
+.dashboard-theme input[type="password"]:focus,
+.dashboard-theme input[type="email"]:focus,
+.dashboard-theme input[type="tel"]:focus,
+.dashboard-theme input[type="number"]:focus,
+.dashboard-theme input[type="search"]:focus,
+.dashboard-theme input:not([type]):focus,
+.dashboard-theme select:focus,
+.dashboard-theme textarea:focus {
   border-color: #064e3b !important;
   box-shadow: 0 0 0 3px rgba(6, 78, 59, 0.15) !important;
 }
 
-select option {
+.dashboard-theme select option {
   background-color: #ffffff !important;
   color: #111827 !important;
 }
 
-/* Live feed scan & call log item list boxes */
-.bg-zinc-950\/40.border-zinc-850 {
+.dashboard-theme .bg-zinc-950\/40.border-zinc-850 {
   background-color: #ffffff !important;
   border: 1.5px solid #1f2937 !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01) !important;
   transition: all 0.2s ease !important;
 }
 
-.bg-zinc-950\/40.border-zinc-850:hover {
+.dashboard-theme .bg-zinc-950\/40.border-zinc-850:hover {
   border-color: #064e3b !important;
   box-shadow: 0 4px 12px rgba(6, 78, 59, 0.04) !important;
 }
 
-/* Table head background */
-thead.bg-zinc-950\/60 {
+.dashboard-theme thead.bg-zinc-950\/60 {
   background-color: rgba(6, 78, 59, 0.03) !important;
   border-bottom: 1.5px solid #1f2937 !important;
 }
 
-/* Table row hover action */
-tr.hover\:bg-zinc-900\/30:hover {
+.dashboard-theme tr.hover\:bg-zinc-900\/30:hover {
   background-color: rgba(6, 78, 59, 0.015) !important;
 }
 
-/* Buttons in dashboard */
-button.bg-white,
-a.bg-white {
+.dashboard-theme button.bg-white,
+.dashboard-theme a.bg-white {
   background-color: #064e3b !important;
   color: #ffffff !important;
   transition: all 0.2s ease !important;
 }
 
-button.bg-white:hover,
-a.bg-white:hover {
+.dashboard-theme button.bg-white:hover,
+.dashboard-theme a.bg-white:hover {
   background-color: #047857 !important;
   transform: translateY(-1px);
 }
+
+/* --- PREMIUM B2B SAAS LANDING PAGE STYLING --- */
+
+/* --- CINEMATIC PRODUCT EXPERIENCE STYLING --- */
+
+.cinematic-root {
+  background-color: #0A0A0A !important;
+  color: #FFFFFF !important;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Satoshi", "Inter", sans-serif;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  cursor: none; /* Hide default cursor to enable custom cursor */
+}
+
+/* Ensure default cursor is hidden everywhere inside cinematic-root */
+.cinematic-root * {
+  cursor: none !important;
+}
+
+/* Base Headings reset for cinematic experience */
+.cinematic-root h1,
+.cinematic-root h2,
+.cinematic-root h3,
+.cinematic-root h4 {
+  color: #FFFFFF !important;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.cinematic-root p {
+  color: #A3A3A3 !important;
+}
+
+/* Background system: Grid, dots, and noise */
+.cinematic-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cinematic-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cinematic-noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: overlay;
+}
+
+/* Moving Light Beams & Spotlights */
+.cinematic-spotlight {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.45;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glow-accent {
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, transparent 70%);
+}
+
+.glow-accent2 {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+}
+
+/* Cinematic Glassmorphism Surface Card */
+.cinematic-card {
+  background: rgba(20, 20, 20, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 12px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.cinematic-card:hover {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
+}
+
+/* Audio waveform animated bars */
+.cinematic-wave-bar {
+  display: inline-block;
+  width: 3px;
+  background-color: #4F46E5;
+  border-radius: 4px;
+  transform-origin: bottom;
+  transition: background-color 0.3s ease;
+}
+
+/* LED breathing state indicators */
+@keyframes led-breath {
+  0%, 100% {
+    opacity: 0.6;
+    box-shadow: 0 0 4px currentColor;
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 12px currentColor;
+  }
+}
+
+.led-status {
+  animation: led-breath 2s infinite ease-in-out;
+}
+
+/* Custom Scrollbar for Cinematic theme */
+.cinematic-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.cinematic-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.cinematic-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+.cinematic-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+
+
+
