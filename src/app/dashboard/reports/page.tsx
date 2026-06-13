@@ -258,7 +258,7 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
             Institute Reports
           </h1>
           <p className="text-zinc-400 mt-1 font-light text-sm">
@@ -308,7 +308,7 @@ export default function ReportsPage() {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition-all font-light"
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-emerald-500 transition-all font-light"
           />
         </div>
 
@@ -322,7 +322,7 @@ export default function ReportsPage() {
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition-all font-light"
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-emerald-500 transition-all font-light"
           />
         </div>
 
@@ -364,7 +364,7 @@ export default function ReportsPage() {
           </div>
           <div>
             <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Average Attendance</span>
-            <h3 className="text-2xl font-bold text-white font-mono mt-1 leading-none">
+            <h3 className="text-2xl font-bold text-zinc-900 font-mono mt-1 leading-none">
               {avgAttendance}%
             </h3>
           </div>
@@ -377,7 +377,7 @@ export default function ReportsPage() {
           </div>
           <div>
             <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Low Attendance Alerts</span>
-            <h3 className="text-2xl font-bold text-white font-mono mt-1 leading-none">
+            <h3 className="text-2xl font-bold text-zinc-900 font-mono mt-1 leading-none">
               {lowAttendanceCount}
             </h3>
           </div>
@@ -390,7 +390,7 @@ export default function ReportsPage() {
           </div>
           <div>
             <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Total Evaluated</span>
-            <h3 className="text-2xl font-bold text-white font-mono mt-1 leading-none">
+            <h3 className="text-2xl font-bold text-zinc-900 font-mono mt-1 leading-none">
               {totalStudents} Students
             </h3>
           </div>
@@ -427,7 +427,7 @@ export default function ReportsPage() {
                 {reportRows.map((row) => (
                   <tr key={row._id} className="hover:bg-zinc-900/30 transition-colors">
                     <td className="py-4 px-6 font-mono text-xs text-zinc-400">{row.studentId}</td>
-                    <td className="py-4 px-6 font-semibold text-white">{row.name}</td>
+                    <td className="py-4 px-6 font-semibold text-zinc-900">{row.name}</td>
                     <td className="py-4 px-6 text-zinc-400">{row.batchName}</td>
                     <td className="py-4 px-6 font-mono font-medium text-emerald-400">{row.present}</td>
                     <td className="py-4 px-6 font-mono font-medium text-red-400">{row.absent}</td>

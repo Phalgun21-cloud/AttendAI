@@ -11,7 +11,7 @@ export default function ProfilePage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-white">My Profile</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-zinc-900">My Profile</h1>
         <p className="text-zinc-400 mt-1 font-light text-sm">
           Manage your account preferences and view your authorization credentials.
         </p>
@@ -26,7 +26,7 @@ export default function ProfilePage() {
                 {session?.user?.name ? session.user.name.charAt(0) : 'U'}
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-white">{session?.user?.name || 'Account User'}</h2>
+                <h2 className="text-xl font-semibold text-zinc-900">{session?.user?.name || 'Account User'}</h2>
               </div>
             </div>
           </div>
@@ -37,14 +37,14 @@ export default function ProfilePage() {
           <div className="space-y-4 font-light text-sm">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 py-1 items-center">
               <span className="text-zinc-500 font-mono uppercase text-xs">User ID</span>
-              <span className="md:col-span-2 text-zinc-300 font-mono select-all text-xs bg-zinc-950 px-2.5 py-1.5 rounded border border-zinc-850 truncate max-w-full inline-block">
+              <span className="md:col-span-2 text-zinc-900 font-mono select-all text-xs bg-zinc-950 px-2.5 py-1.5 rounded border border-zinc-850 truncate max-w-full inline-block">
                 {(session?.user as any)?.id || 'undefined_id'}
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 py-1 items-center">
               <span className="text-zinc-500 font-mono uppercase text-xs">Email Address</span>
-              <div className="md:col-span-2 flex items-center gap-2 text-zinc-300">
+              <div className="md:col-span-2 flex items-center gap-2 text-zinc-900">
                 <Mail className="h-4 w-4 text-zinc-500" />
                 <span>{session?.user?.email}</span>
               </div>
@@ -54,7 +54,7 @@ export default function ProfilePage() {
 
         {/* Security / System Card */}
         <div className="border border-zinc-800 bg-zinc-900/20 rounded-xl p-8 space-y-6">
-          <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider flex items-center gap-2">
             <Shield className="h-4 w-4 text-emerald-400" />
             Security & Controls
           </h3>

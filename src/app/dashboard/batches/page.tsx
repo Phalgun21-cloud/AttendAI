@@ -121,7 +121,7 @@ export default function BatchDirectoryPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
             Batch Directory
           </h1>
           <p className="text-zinc-400 mt-1 font-light text-sm">
@@ -168,7 +168,7 @@ export default function BatchDirectoryPage() {
               <Layers className="h-8 w-8" />
             </div>
             <div>
-              <h3 className="text-lg font-medium text-white">No Batches Found</h3>
+              <h3 className="text-lg font-medium text-zinc-900">No Batches Found</h3>
               <p className="text-zinc-500 text-sm mt-1 max-w-md mx-auto font-light">
                 {searchTerm
                   ? "No batches matching your search query are registered in the system."
@@ -201,7 +201,7 @@ export default function BatchDirectoryPage() {
                 {filteredBatches.map((batch) => (
                   <tr key={batch._id} className="hover:bg-zinc-900/30 transition-colors group">
                     {/* Batch Name */}
-                    <td className="py-4.5 px-6 font-medium text-white flex items-center gap-3">
+                    <td className="py-4.5 px-6 font-medium text-zinc-900 flex items-center gap-3">
                       <div className="h-8.5 w-8.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
                         {batch.name.charAt(0)}
                       </div>
@@ -210,14 +210,14 @@ export default function BatchDirectoryPage() {
 
                     {/* Course */}
                     <td className="py-4.5 px-6">
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-800 border border-zinc-850 text-zinc-300">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-800 border border-zinc-850 text-zinc-700">
                         <Tag className="h-3 w-3 text-zinc-500" />
                         {batch.course}
                       </span>
                     </td>
 
                     {/* Schedule */}
-                    <td className="py-4.5 px-6 text-xs text-zinc-400 font-mono">
+                    <td className="py-4.5 px-6 text-xs text-zinc-500 font-mono">
                       <div className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5 text-zinc-500" />
                         {batch.timeSlot}

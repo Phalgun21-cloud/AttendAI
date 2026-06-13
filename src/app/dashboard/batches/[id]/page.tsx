@@ -89,7 +89,7 @@ export default function BatchDetailsPage() {
           <BookOpen className="h-8 w-8" />
         </div>
         <div>
-          <h3 className="text-lg font-medium text-white">Batch Not Found</h3>
+          <h3 className="text-lg font-medium text-zinc-900">Batch Not Found</h3>
           <p className="text-zinc-500 text-sm mt-1 max-w-md mx-auto font-light">
             The batch you are looking for does not exist or has been removed.
           </p>
@@ -126,7 +126,7 @@ export default function BatchDetailsPage() {
 
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
               {batchDetails.name}
             </h1>
             <div className="flex items-center gap-4 mt-2">
@@ -153,7 +153,7 @@ export default function BatchDetailsPage() {
             <Users className="h-4.5 w-4.5 text-blue-400" />
           </div>
           <div className="mt-3">
-            <span className="text-3xl font-bold tracking-tight text-white font-mono leading-none">
+            <span className="text-3xl font-bold tracking-tight text-zinc-900 font-mono leading-none">
               {totalStudents}
             </span>
           </div>
@@ -167,7 +167,7 @@ export default function BatchDetailsPage() {
             <Percent className="h-4.5 w-4.5 text-emerald-400" />
           </div>
           <div className="mt-3">
-            <span className="text-3xl font-bold tracking-tight text-white font-mono leading-none">
+            <span className="text-3xl font-bold tracking-tight text-zinc-900 font-mono leading-none">
               {avgAttendance}%
             </span>
           </div>
@@ -178,7 +178,7 @@ export default function BatchDetailsPage() {
       <div className="border border-zinc-850 bg-zinc-900/10 rounded-2xl p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider">
               Batch Attendance Trend
             </h3>
             <p className="text-zinc-500 text-xs mt-0.5 font-light">
@@ -209,20 +209,20 @@ export default function BatchDetailsPage() {
               <AreaChart data={data[`${timeRange}History`]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#064e3b" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="#064e3b" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <XAxis 
                   dataKey="date" 
-                  stroke="#52525b" 
+                  stroke="#4b5563" 
                   fontSize={10} 
                   fontFamily="monospace"
                   tickLine={false} 
                   axisLine={false}
                 />
                 <YAxis 
-                  stroke="#52525b" 
+                  stroke="#4b5563" 
                   fontSize={10} 
                   fontFamily="monospace"
                   tickLine={false} 
@@ -231,15 +231,15 @@ export default function BatchDetailsPage() {
                   tickFormatter={(v) => `${v}%`}
                 />
                 <Tooltip
-                  contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
-                  labelStyle={{ color: '#fafafa', fontFamily: 'monospace', fontSize: '11px' }}
-                  itemStyle={{ color: '#10b981', fontSize: '11px' }}
+                  contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                  labelStyle={{ color: '#111827', fontFamily: 'monospace', fontSize: '11px' }}
+                  itemStyle={{ color: '#064e3b', fontSize: '11px' }}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="rate" 
-                  stroke="#10b981" 
-                  strokeWidth={2}
+                  stroke="#064e3b" 
+                  strokeWidth={2.5}
                   fillOpacity={1} 
                   fill="url(#colorRate)" 
                   name="Attendance Rate"
@@ -257,7 +257,7 @@ export default function BatchDetailsPage() {
       {/* Student Reports Table */}
       <div className="border border-zinc-800 bg-zinc-900/10 rounded-xl overflow-hidden shadow-xl">
         <div className="p-5 border-b border-zinc-850">
-          <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+          <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider">
             Student Attendance Reports
           </h3>
           <p className="text-zinc-500 text-xs mt-0.5 font-light">
@@ -284,7 +284,7 @@ export default function BatchDetailsPage() {
               <tbody className="divide-y divide-zinc-850 bg-zinc-900/10">
                 {studentReports.map((student) => (
                   <tr key={student._id} className="hover:bg-zinc-900/30 transition-colors group">
-                    <td className="py-4.5 px-6 font-medium text-white flex items-center gap-3">
+                    <td className="py-4.5 px-6 font-medium text-zinc-900 flex items-center gap-3">
                       <div className="h-8.5 w-8.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
                         {student.name.charAt(0)}
                       </div>

@@ -99,7 +99,7 @@ export default function StudentDetailsPage() {
           <User className="h-8 w-8" />
         </div>
         <div>
-          <h3 className="text-lg font-medium text-white">Student Not Found</h3>
+          <h3 className="text-lg font-medium text-zinc-900">Student Not Found</h3>
           <p className="text-zinc-500 text-sm mt-1 max-w-md mx-auto font-light">
             The student profile you are looking for does not exist or has been removed.
           </p>
@@ -145,7 +145,7 @@ export default function StudentDetailsPage() {
               {studentDetails.name.charAt(0)}
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+              <h1 className="text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
                 {studentDetails.name}
               </h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
@@ -176,7 +176,7 @@ export default function StudentDetailsPage() {
             <Percent className="h-4.5 w-4.5 text-emerald-400" />
           </div>
           <div className="mt-3">
-            <span className="text-3xl font-bold tracking-tight text-white font-mono leading-none">
+            <span className="text-3xl font-bold tracking-tight text-zinc-900 font-mono leading-none">
               {attendanceRate}%
             </span>
           </div>
@@ -190,7 +190,7 @@ export default function StudentDetailsPage() {
             <PhoneCall className="h-4.5 w-4.5 text-blue-400" />
           </div>
           <div className="mt-3">
-            <span className="text-3xl font-bold tracking-tight text-white font-mono leading-none">
+            <span className="text-3xl font-bold tracking-tight text-zinc-900 font-mono leading-none">
               {totalCalls}
             </span>
           </div>
@@ -200,7 +200,7 @@ export default function StudentDetailsPage() {
       {/* Attendance History Table */}
       <div className="border border-zinc-800 bg-zinc-900/10 rounded-xl overflow-hidden shadow-xl">
         <div className="p-5 border-b border-zinc-850">
-          <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+          <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider">
             Recent Attendance & Call Logs
           </h3>
           <p className="text-zinc-500 text-xs mt-0.5 font-light">
@@ -231,11 +231,11 @@ export default function StudentDetailsPage() {
                   return (
                     <tr key={record._id} className="hover:bg-zinc-900/30 transition-colors group">
                       {/* Date */}
-                      <td className="py-4.5 px-6 font-medium text-white">
+                      <td className="py-4.5 px-6 font-medium text-zinc-900">
                         <div className="flex items-center gap-3">
                           <div className="flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700">
-                            <span className="text-[10px] text-zinc-400 uppercase leading-none mt-1">{d.toLocaleDateString('en-US', { month: 'short' })}</span>
-                            <span className="text-sm font-bold text-white leading-none mt-1">{d.getDate()}</span>
+                            <span className="text-[10px] text-zinc-500 uppercase leading-none mt-1">{d.toLocaleDateString('en-US', { month: 'short' })}</span>
+                            <span className="text-sm font-bold text-zinc-900 leading-none mt-1">{d.getDate()}</span>
                           </div>
                           <span className="text-zinc-400 font-light text-xs">
                             {d.toLocaleDateString('en-US', { weekday: 'long' })}
@@ -297,7 +297,7 @@ export default function StudentDetailsPage() {
             {/* Modal Header */}
             <div className="p-5 border-b border-zinc-800 flex items-start justify-between bg-zinc-900/50">
               <div>
-                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                <h2 className="text-xl font-semibold text-zinc-900 flex items-center gap-2">
                   <PhoneCall className="h-5 w-5 text-blue-400" />
                   AI Call Log Details
                 </h2>
@@ -330,7 +330,7 @@ export default function StudentDetailsPage() {
 
               {/* Transcript */}
               <div>
-                <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider mb-4 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-zinc-900 font-mono uppercase tracking-wider mb-4 flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 text-zinc-400" />
                   Full Transcript
                 </h3>

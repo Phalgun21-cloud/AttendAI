@@ -209,7 +209,7 @@ export default function StudentDirectoryPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
             Student Directory
           </h1>
           <p className="text-zinc-400 mt-1 font-light text-sm">
@@ -238,7 +238,7 @@ export default function StudentDirectoryPage() {
             placeholder="Search by student name, ID, or parent name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-zinc-900/40 border border-zinc-800 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all font-light"
+            className="w-full bg-zinc-900/40 border border-zinc-800 rounded-lg pl-10 pr-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-emerald-500 transition-all font-light"
           />
         </div>
 
@@ -247,7 +247,7 @@ export default function StudentDirectoryPage() {
           <select
             value={selectedBatchFilter}
             onChange={(e) => setSelectedBatchFilter(e.target.value)}
-            className="w-full bg-zinc-900/40 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-zinc-300 focus:outline-none focus:border-emerald-500 transition-all font-light cursor-pointer"
+            className="w-full bg-zinc-900/40 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-zinc-700 focus:outline-none focus:border-emerald-500 transition-all font-light cursor-pointer"
           >
             <option value="">All Batches</option>
             {batches.map((batch) => (
@@ -272,7 +272,7 @@ export default function StudentDirectoryPage() {
               <UserPlus className="h-8 w-8" />
             </div>
             <div>
-              <h3 className="text-lg font-medium text-white">No Students Found</h3>
+              <h3 className="text-lg font-medium text-zinc-900">No Students Found</h3>
               <p className="text-zinc-500 text-sm mt-1 max-w-md mx-auto font-light">
                 {searchTerm || selectedBatchFilter
                   ? "No records matching your search queries or filter choices are registered in the system."
@@ -310,7 +310,7 @@ export default function StudentDirectoryPage() {
                   return (
                     <tr key={student._id} className="hover:bg-zinc-900/30 transition-colors group">
                       {/* Name & Avatar */}
-                      <td className="py-4.5 px-6 font-medium text-white flex items-center gap-3">
+                      <td className="py-4.5 px-6 font-medium text-zinc-900 flex items-center gap-3">
                         <div className="h-8.5 w-8.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
                           {student.name.charAt(0)}
                         </div>
@@ -318,13 +318,13 @@ export default function StudentDirectoryPage() {
                       </td>
 
                       {/* ID */}
-                      <td className="py-4.5 px-6 font-mono text-xs text-zinc-400 select-all">
+                      <td className="py-4.5 px-6 font-mono text-xs text-zinc-500 select-all">
                         {student.studentId}
                       </td>
 
                       {/* Batch */}
                       <td className="py-4.5 px-6">
-                        <span className="text-zinc-300">
+                        <span className="text-zinc-900 font-semibold">
                           {studentBatch ? studentBatch.name : 'Unknown Batch'}
                         </span>
                         {studentBatch && (
@@ -336,7 +336,7 @@ export default function StudentDirectoryPage() {
 
                       {/* Course */}
                       <td className="py-4.5 px-6">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-800 border border-zinc-850 text-zinc-300">
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-800 border border-zinc-850 text-zinc-700">
                           <Tag className="h-3 w-3 text-zinc-500" />
                           {student.course}
                         </span>
@@ -344,7 +344,7 @@ export default function StudentDirectoryPage() {
 
                       {/* Parent */}
                       <td className="py-4.5 px-6 text-xs space-y-0.5">
-                        <div className="text-zinc-200 font-medium">{student.parentName}</div>
+                        <div className="text-zinc-800 font-semibold">{student.parentName}</div>
                         <div className="text-zinc-500 flex items-center gap-1">
                           <Phone className="h-3 w-3" />
                           {student.parentPhone}
