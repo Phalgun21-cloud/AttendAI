@@ -237,7 +237,15 @@ export default function DashboardPage() {
           <div className="h-64 w-full flex flex-col">
             {stats && stats.absenteesByBatch ? (
               <>
-                <div className="flex-1 w-full min-h-0 relative">
+                <div className="flex-1 w-full min-h-0 relative flex items-center justify-center">
+                  <div className="absolute flex flex-col items-center justify-center pointer-events-none z-10">
+                    <span className="text-[28px] font-bold text-white font-mono leading-none">
+                      {stats.absenteesByBatch.reduce((sum: number, item: any) => sum + item.value, 0)}
+                    </span>
+                    <span className="text-[9px] font-bold text-zinc-500 tracking-widest mt-1">
+                      TOTAL
+                    </span>
+                  </div>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                       <Pie
@@ -254,25 +262,6 @@ export default function DashboardPage() {
                         onMouseEnter={(data: any) => setAbsenteesActiveName(data?.name || null)}
                         onMouseLeave={() => setAbsenteesActiveName(null)}
                       >
-                        <Label
-                          position="center"
-                          content={(props: any) => {
-                            const { viewBox } = props;
-                            if (!viewBox || viewBox.cx === undefined || viewBox.cy === undefined) return null;
-                            const { cx, cy } = viewBox;
-                            const total = stats.absenteesByBatch.reduce((sum: number, item: any) => sum + item.value, 0);
-                            return (
-                              <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">
-                                <tspan x={cx} dy="-0.2em" fill="white" fontSize="28" fontWeight="bold" fontFamily="monospace">
-                                  {total}
-                                </tspan>
-                                <tspan x={cx} dy="1.6em" fill="#71717a" fontSize="9" fontWeight="bold" letterSpacing="0.1em">
-                                  TOTAL
-                                </tspan>
-                              </text>
-                            );
-                          }}
-                        />
                         {stats.absenteesByBatch.map((entry: any, index: number) => (
                           <Cell
                             key={`cell-${index}`}
